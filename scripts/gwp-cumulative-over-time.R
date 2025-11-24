@@ -7,7 +7,7 @@ gwplinegraph <- function(dataset) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
   library(ggplot2)
   # TODO REMOVE TEMP
-  dataset <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx",sheet = "Main")
+  #dataset <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx",sheet = "Main")
   # our dataset contains the gasses of NH3 OC PM10 PM2.5 BC NOx NMVOC SO2 C
   # the database uses their chemical names, 
   
@@ -59,7 +59,6 @@ gwplinegraph <- function(dataset) {
     levels = c("GWP20", "GWP100", "GWP500") 
   )
   
-  # 3. Generate the plot
   library(ggplot2)
   
   ggplot(data, aes(x = time_point, y = value, group = Study_ID, color = Study_ID)) +

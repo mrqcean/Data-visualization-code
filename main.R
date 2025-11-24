@@ -19,7 +19,7 @@ gwplinegraph(data)
 install.packages("shinydashboard")
 library(shinydashboard)
 
-library(shiny)
+
 library(shinydashboard)
 
 ui <- dashboardPage(
@@ -38,6 +38,9 @@ emissions_by_industry <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = 
 # "non-dr" congo, elsalvador, singapore og danmark
 # these are row  274, 1191,1167 ,361
 countries <- slice(emissions_by_industry, 274,1191,1167,361)
+countries <- filter(emissions_by_industry,
+                    grepl('Australia', Name)
+                    )
 
 ##### Importing scripts
 # source does not work recursively, else we have to define a custom 
