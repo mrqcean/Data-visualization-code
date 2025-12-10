@@ -1,50 +1,47 @@
-
-if (!requireNamespace("shiny", quietly = TRUE)) install.packages("shiny")
-if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
-if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
 library(shiny)
+library(shinydashboard)
 library(dplyr)
 library(ggplot2)
-# reading xlsx package, Install, then load 
-install.packages("readxl")
-library("readxl")
+library(readxl)
 
-###### GWP visualization 
-data <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx",sheet = "Main")
+# 1. DATA AND SCRIPTS (GLOBAL)
+# Ensure your working directory is the folder containing 'datasets' and 'scripts'
+data <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
 source("./scripts/gwp-cumulative-over-time.R")
-gwplinegraph(data)
 
-##### main dataset
-# save as different main_data <- read_excel("")
-install.packages("shinydashboard")
-library(shinydashboard)
-
-
-library(shinydashboard)
-
+# 2. UI DEFINITION
 ui <- dashboardPage(
-  dashboardHeader(),
-  dashboardSidebar(),
-  dashboardBody()
+  dashboardHeader(title = "GWP Analysis"),
+  
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("GWP Dashboard", tabName = "dashboard", icon = icon("chart-line"))
+    )
+  ),
+  
+  dashboardBody(
+    tabItems(
+      tabItem(tabName = "dashboard",
+              fluidRow(
+                box(
+                  title = "Global Warming Potential Over Time",
+                  status = "primary", 
+                  solidHeader = TRUE, 
+                  width = 12, # Full width usually looks better for graphs
+                  plotOutput("my_line_graph")
+                )
+              )
+      )
+    )
+  )
 )
 
-server <- function(input, output) { }
+# 3. SERVER LOGIC
+server <- function(input, output) {
+  output$my_line_graph <- renderPlot({
+    gwp_linegraph(data)
+  })
+}
 
+# 4. RUN APP
 shinyApp(ui, server)
-
-
-# emissions by industry
-emissions_by_industry <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage")
-# "non-dr" congo, elsalvador, singapore og danmark
-# these are row  274, 1191,1167 ,361
-countries <- slice(emissions_by_industry, 274,1191,1167,361)
-countries <- filter(emissions_by_industry,
-                    grepl('Australia', Name)
-                    )
-
-##### Importing scripts
-# source does not work recursively, else we have to define a custom 
-# function that for each file sources that file  
-
-
-

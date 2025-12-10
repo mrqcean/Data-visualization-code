@@ -1,68 +1,45 @@
-# this defines the function the create the graph which is imported in main.r in root dir
-
-gwplinegraph <- function(dataset) {
-# we only use the data from ar6 as that is the newest iteration of the gwp estimations 
+gwp_linegraph <- function(dataset) {
   library(tidyverse)
   library(stringr)
-  if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
-  library(ggplot2)
-  # TODO REMOVE TEMP
-  #dataset <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx",sheet = "Main")
-  # our dataset contains the gasses of NH3 OC PM10 PM2.5 BC NOx NMVOC SO2 C
-  # the database uses their chemical names, 
   
-  # R
-  filtereddataset <-   filtereddataset <- filter(
-    dataset,
-    # NOx is substituted with NO as no2 is not included in dataset
-    # added methane CH4 and use $ to say end of line in regex
-    # NMVOC are health hazard polutants as such not included in gwp dataset
-    # pm are air pollutant clusters.
-    # SO2 does not exist, Sulfur hexflouride exists
-    # oc 
-    grepl('NH3|OC|BC|Nitrous oxide|SO2|Carbon dioxide|Methane$', GHG)
-  )
- 
-  #sort dataframe by col, then sort by indicator
+  # Filter the dataset for specific gases
+  # Note: regex '$' ensures we don't accidentally get partial matches
+  filtereddataset <- dataset %>%
+    filter(grepl('NH3|OC|BC|Nitrous oxide|SO2|Carbon dioxide|Methane$', GHG))
+  
+  # Sort to ensure consistent slicing
   sort.df <- filtereddataset %>%
     arrange(GHG, str_sort(Indicator, numeric = TRUE))
-  colnames(filtereddataset)
   
-  # get 20,100,500 for each gwp preferebly from AR6 iteration
-  CO <- slice(sort.df,6,7,8)
-  methane <- slice(sort.df, 14,15,16)
-  NO <- slice(sort.df,22,23,24)
-  emissions <- rbind(CO,methane,NO)
+  # Slice the data (ensure indices 6-8, 14-16, and 22-24 exist in your specific Excel file)
+  CO_data <- slice(sort.df, 6, 7, 8)
+  methane_data <- slice(sort.df, 14, 15, 16)
+  NO_data <- slice(sort.df, 22, 23, 24)
   
+  emissions <- rbind(CO_data, methane_data, NO_data)
   
-  # todo fix up
-  data<-data.frame(Study_ID=c("a","a","a","200","200","200","300","300","300"),time_point=c("GWP20","GWP100","GWP500","GWP20","GWP100","GPW500","GWP20","GWP100","GWP500"),value=emissions$`GWP kgCO2e/kg GHG`)
-  
-  ggplot(data, aes(time_point, value, group = Study_ID, color = Study_ID)) + 
-    geom_point() + 
-    geom_line()
-  
-  
-
-  
+  # Create a clean dataframe for plotting
+  # We repeat the Gas Name 3 times for each gas (for GWP20, 100, 500)
   data <- data.frame(
-    Study_ID = c("a", "a", "a", "200", "200", "200", "300", "300", "300"),
-    time_point = c("GWP20", "GWP100", "GWP500", "GWP20", "GWP100", "GWP500", "GWP20", "GWP100", "GWP500"),
+    Gas = rep(c("Carbon Dioxide", "Methane", "Nitrous Oxide"), each = 3),
+    time_point = rep(c("GWP20", "GWP100", "GWP500"), times = 3),
     value = emissions$`GWP kgCO2e/kg GHG`
   )
   
-  # Convert 'time_point' to a factor and explicitly set the order of levels. 
-  # The original code had a repeated level ("GWP500").
-  # This version correctly lists the three unique levels in the desired order: GWP20, GWP100, GWP500.
-  data$time_point <- factor(
-    data$time_point, 
-    levels = c("GWP20", "GWP100", "GWP500") 
-  )
+  # Ensure the time points stay in chronological order on the X-axis
+  data$time_point <- factor(data$time_point, levels = c("GWP20", "GWP100", "GWP500"))
   
-  library(ggplot2)
-  
-  ggplot(data, aes(x = time_point, y = value, group = Study_ID, color = Study_ID)) +
-    geom_point() +
-    geom_line()
+  # Create the plot
+  plot <- ggplot(data, aes(x = time_point, y = value, group = Gas, color = Gas)) +
+    geom_point(size = 3) + 
+    geom_line(linewidth = 1) +
+    labs(
+      title = "Global Warming Potential (GWP) Trends",
+      x = "Time Horizon",
+      y = "kg CO2e / kg GHG",
+      color = "Greenhouse Gas"
+    ) +
+    theme_minimal()
+  return(plot)
 }
 
