@@ -34,9 +34,9 @@ gwp_linegraph <- function(dataset) {
     geom_point(size = 3) + 
     geom_line(linewidth = 1) +
     labs(
-      title = "Global Warming Potential (GWP) Trends",
-      x = "Time Horizon",
-      y = "kg CO2e / kg GHG",
+      title = "Global Warming Potential (GWP) Trends in years",
+      x = "Years from emission",
+      y = "CO2e / Greenhouse gas",
       color = "Greenhouse Gas"
     ) +
     theme_minimal()
