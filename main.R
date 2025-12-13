@@ -9,9 +9,22 @@ library(readxl)
 library(gganimate)
 
 
-main_data <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
+data_gwp <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
 source("./scripts/gwp-cumulative-over-time.R")
 # source("./scripts/gwp-bar-and-donut.R")
+
+emissions_by_industry <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
+# "non-dr" congo, elsalvador, singapore og danmark
+# these are row  274, 1191,1167 ,361
+countries <- slice(emissions_by_industry, 274,1191,1167,361)
+
+filtereddatasetbar <- filter(
+  emissions_by_industry,
+  grepl('Denmark|Congo$|Singapore|El Salvador', ...2)
+)
+barcharta <- ggplot(filtereddatasetbar, aes(x = ...2, y = ...4, fill = ...3))+ geom_col()
+barchartb <- ggplot(filtereddatasetbar, aes(x = ...2, y = ...24, fill = ...3))+ geom_col()
+barchartc <- ggplot(filtereddatasetbar, aes(x = ...2, y = ...44, fill = ...3))+ geom_col()
 
 
 sidebar <- dashboardSidebar(
@@ -50,6 +63,12 @@ body <- dashboardBody(
                   # This is the empty space, where you can add summary text or a table later
                   p("This panel is ready for your summary table or text output!")
                   #plotOutput("donought")
+                ),
+                tabPanel(
+                  title = "Bar chart emissions for four countries",
+                  icon = icon("bar-chart"),
+                  
+                  plotOutput("barchart1")
                 )
               )
              
@@ -71,11 +90,15 @@ ui <- dashboardPage(
 # 3. SERVER LOGIC
 server <- function(input, output) {
   output$my_line_graph <- renderPlot({
-    gwp_linegraph(main_data)
+    gwp_linegraph(data_gwp)
   })
   output$donought <- renderPlot({
     
   })
+  output$barchart1 <- renderPlot({
+    barcharta
+  })
+  
 }
 
 # 4. RUN APP
