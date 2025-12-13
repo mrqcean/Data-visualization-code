@@ -5,7 +5,8 @@ library(ggplot2)
 library(readxl)
 
 #install.packages('gganimate')
-#library(gganimate)
+#install.packages('tidyverse')
+library(gganimate)
 
 
 main_data <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
