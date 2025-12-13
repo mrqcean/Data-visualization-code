@@ -6,7 +6,7 @@ library(readxl)
 
 #install.packages('gganimate')
 #install.packages('tidyverse')
-# library(gganimate)
+library(gganimate)
 
 
 data_gwp <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
