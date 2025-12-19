@@ -1,4 +1,4 @@
-list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr")
+list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -36,8 +36,6 @@ NO_data <- slice(sort.df, 22, 23, 24)
 black_carbon_values <- c(1600, 460, 140)
 organic_carbon_values <- c(-240, -69, -21)
 
-
-
 # 1. Extract the value column from the sliced data frames
 CO_values <- CO_data$`GWP kgCO2e/kg GHG`
 methane_values <- methane_data$`GWP kgCO2e/kg GHG`
@@ -46,6 +44,7 @@ NO_values <- NO_data$`GWP kgCO2e/kg GHG`
 # 2. Combine all values into a single vector
 all_values <- c(CO_values, methane_values, NO_values, 
                 black_carbon_values, organic_carbon_values)
+
 
 # Create a clean dataframe for plotting
 # The length of the 'Gas' and 'time_point' vectors must match the length of 'all_values'
@@ -57,11 +56,27 @@ gwp_data_plotting <- data.frame(
 # Ensure the time points stay in chronological order on the X-axis
 gwp_data_plotting$time_point <- factor(gwp_data_plotting$time_point, levels = c("GWP20", "GWP100", "GWP500"))
 
-##### real dataset 
+
+
+
+##### emission share
+source("./scripts/emission-by-share.R")
+
+# each row is its own group, while the column is the y values
+
+# make slider for ammount of years to show relative to start forwards in time
+
+## slider in sidebar, later only show when page/tab active
+
+# make some way to show for a single country
+
+
+##### Emission per industry  
 emissions_by_industry <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
 # "non-dr" congo, elsalvador, singapore og danmark
 # these are row  274, 1191,1167 ,361
 countries <- slice(emissions_by_industry, 274,1191,1167,361)
+
 
 filtereddatasetbar <- filter(
   emissions_by_industry,
