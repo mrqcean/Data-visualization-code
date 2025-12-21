@@ -18,20 +18,25 @@ emissions_by_share <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Su
 # remove climate pollution stats, pm10,pm2.5, VOC and keep green house gas affecting gasses.
 emissions_by_share <- emissions_by_share %>%
   filter(Name %in% countries_filter)
+# i am going to make 3 graphs instead of 1 which can switc(eyes over memory...)
+# which just 3 wrapper functions passing argument "Substance" to main function
 
-emissions_by_share <- emissions_by_share %>%
-  filter(Substance %in% c("OC", "BC", "NOx", "CO"))
+
+
+#emissions_by_share <- emissions_by_share %>%
+#  filter(Substance %in% c("OC", "BC", "NOx", "CO"))
 # just use a var as we only have 4 values, instead of implementing enums in R
 # selected is set with a function inside server
-# TODO make the function and datatype correct, to allow setting var outside script file
-#substance_selected <- c()
-#setselected <- function(substance_string){
-  # values should be validated inside this function but will just be used by server.
-#  possible_values <- c(  "OC","BC","NOx","CO") 
-#  substance_selected <- c(substance_string)
-#}
 
-selected_substance <- "CO"
+# the most nice substance is gwp relevant such as OC,BC,NOx, and CO
+internal_functiongen <- function(selected_substance){
+# ensure an argument is a string
+#stopifnot(is.character(internal_functiongen))
+
+
+
+# just going to use 
+
 data <- filter(emissions_by_share,Substance %in% c(selected_substance))
 groups <- select(data,"Name")
 # groups need to be 1xentry_ammount to be used as groups argument
@@ -80,8 +85,8 @@ plotdata <- data.frame(
 )
 # reorder by highest emitter
 # do not remove NA values as we want to keep the table alignment the same
-plotdata <- plotdata %>%
-  mutate(category = fct_reorder(category, amount, .fun = sum, .desc = TRUE,.na_rm = FALSE))
+#plotdata <- plotdata %>%
+ # mutate(category = fct_reorder(category, amount, .fun = sum, .desc = TRUE,.na_rm = FALSE))
 
 # # year we should have each wave have the label
 # ggplot(plotdata, aes(x=as.numeric(day), y=as.numeric(amount), fill=category)) + 
@@ -105,25 +110,39 @@ plotdata <- plotdata %>%
 # We add a 'text' aesthetic to customize what shows up in the hover box
 p <- ggplot(plotdata, aes(x = as.numeric(day), 
                           y = amount, 
-                          color = category,
+                          color = category, # argument needed for coloring line graph
+                          #fill = amount,
                           # This creates the custom hover label
-                          text = paste("Country:", category, "<br>Year:", as.numeric(years), "<br>Value:", amount))) + 
+                          text = paste("Country:", category, "<br>Year:", years, "<br>Value:", amount))) + 
   geom_line(aes(group = category)) + # Explicitly group by category
   theme_minimal() +
-  theme(legend.position = "none") + # Hide the giant legend
-  labs(title = "Hover over the graph to see Country Names",
+  # Hide the giant legend
+  theme(legend.position = "none",
+        # set the theme ready for different elements of graph
+        # this kills axis
+        #axis.line = element_blank(), 
+        #axis.text = element_blank(),
+        #      axis.ticks = element_blank(), 
+        #axis.title = element_blank()
+        ) +
+          scale_fill_viridis(option="magma") + 
+
+  labs(title = "evolution of each country's share of the Source",
        x = "Year",
        # concat to say, substance share of emitted substances for own country
        # internal country share of selected_substance
        y = selected_substance)
+
 
 # 2. Convert the ggplot to an interactive plotly object
 # 'tooltip' tells plotly to only show the custom 'text' we created above
 interactive_plot <- ggplotly(p, tooltip = "text")
 
 # 3. View the plot
-interactive_plot
+#interactive_plot
 
+return(interactive_plot)
+}
 # library(ggplot2)
 # library(plotly)
 # # TODO step over colors instead of using closest such that they bleed over
@@ -173,3 +192,11 @@ interactive_plot
 # # 3. Render the plot
 # interactive_plot
 
+plot_CO <- internal_functiongen("CO")
+plot_OC <- internal_functiongen("OC")
+plot_NOx <- internal_functiongen("NOx")
+plot_BC <- internal_functiongen("BC")
+plot_CO
+plot_BC
+plot_OC
+plot_NOx

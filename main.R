@@ -1,4 +1,4 @@
-list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","ggstream")
+list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl",)
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -11,6 +11,7 @@ library(plotly) # for interactable graphs
 library(readxl)
 library(tidyverse)
 library(stringr)
+library(viridis) # colorschems for better readability and color blindness
 
 
 #install.packages('gganimate')
