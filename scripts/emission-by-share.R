@@ -109,6 +109,8 @@ library(plotly)
 # TODO step over colors instead of using closest such that they bleed over
 # modify data in real time based on who becomes top, or just make it an animated graph
 # 1. Build the static ggplot object
+
+fig <- 
 p <- ggplot(plotdata, aes(x = as.numeric(day), 
                           y = amount, 
                           fill = category,
@@ -116,11 +118,18 @@ p <- ggplot(plotdata, aes(x = as.numeric(day),
                           text = paste("Country:", category, 
                                        "<br>Year:", day, 
                                        "<br>Value:", format(amount, big.mark=",")))) + 
-  geom_area(aes(group = category,stat ="identity")) +
+  geom_area(aes(group = category,)) +
   # THE FIX: Invisible points to anchor the tooltips
+  # text only takes one vector as argument it does not dynamically update the other args, 
+  #this is why year, value are not updated.
   geom_point(aes(text = paste("Country:", category, 
                               "<br>Year:", day, 
-                              "<br>Value:", round(amount, 2))),alpha = 0) +
+                              "<br>Value:", round(amount, 2))),alpha = 0,
+             # 2f means 2 decimals right
+             hovertemplate = paste('<i>Price</i>: $%{amount:.2f}',
+                        '<br><b>X</b>: %{day}<br>',
+                        '<b>%{text}</b>')
+  ) +
   theme_minimal() +
   theme(legend.position = "none") + # Keep the legend hidden so the graph has space
   labs(title = "Global Trends (Zoomable)",
