@@ -3,8 +3,10 @@
 
 # import page with all country types, used for filtering countries out when doing a graph
 country_classification <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 2- countries",skip = 1)
+# a more efficient way to sort rows my column values inside the name of regional grouping 
 filtereddataset <- country_classification %>%
   filter(grepl('Europe', .data[["Regional grouping"]]))
+
 
 # removing greenland as all substances have the same value from  1997 to 2003
 # get all countries but not Greenland
@@ -60,24 +62,11 @@ years <- names(data)
 values <- as.vector(t(data))
 
 ## transforming data for input into plot function
-# we use a stacked area graph as we have over 200 groups and want to show the timeseries evolution over time
 
-# below has also the duplicated for OC, BC,NOx,CO
-# it already has for above 200 counries, so Should be best to get a general overview so square graph it is 
-# should probably split them up and make a graph for each substance, or make it automatically add these together
-# and make dots on sideboard as to which to add to the whole
-
-
-
-#len_column <- as.numeric(length(x))
-# for each country has times ammount of data entries 
-#multiplier <- as.numeric(length(times))
- 
- #times <- length(groups)
 #groups are countries, eg a row, 
 # y values are the from the 3 third columns in that country 
 
-# extract the numbers for each row and add onto a vector
+
 # replicate groups x timeslots should be equal to how many datapoints we have
 # stacked area graph is geom apparently
 groupfactor <- length(values)/length(groups) # was 49 at some point
@@ -95,23 +84,6 @@ plotdata <- data.frame(
 #plotdata <- plotdata %>%
  # mutate(category = fct_reorder(category, amount, .fun = sum, .desc = TRUE,.na_rm = FALSE))
 
-# # year we should have each wave have the label
-# ggplot(plotdata, aes(x=as.numeric(day), y=as.numeric(amount), fill=category)) + 
-#   # The labels take up too much space, but if we remove them then the viewer has no Idea what they are
-#   geom_area(show.legend = FALSE)+
-#   labs(
-#     title = "Stacked Area Chart Example",
-#     x = "Year",
-#     y = selected_substance,
-#     fill = "Category"
-#   ) +
-#   theme_minimal()
-# 
-# 
-# 
-# 
-# library(ggplot2)
-# library(plotly)
 
 # 1. Build the ggplot object
 # We add a 'text' aesthetic to customize what shows up in the hover box
@@ -120,8 +92,10 @@ p <- ggplot(plotdata, aes(x = as.numeric(day),
                           color = category, # argument needed for coloring line graph
                           #fill = amount,
                           # This creates the custom hover label
-                          text = paste("Country:", category, "<br>Year:", years, "<br>Value:", amount))) + 
-  geom_line(aes(group = category)) + # Explicitly group by category
+                          text = paste("Country:", category, "<br>Year:", years, "<br>Value:", amount))) +
+  geom_point(size=1,shape=1,alpha=0.7,aes(colour = category))+
+  geom_line(aes(group = category)) + # Explicitly group by category 
+  
   theme_minimal() +
   # Hide the giant legend
   theme(legend.position = "none",
@@ -132,7 +106,7 @@ p <- ggplot(plotdata, aes(x = as.numeric(day),
         #      axis.ticks = element_blank(), 
         #axis.title = element_blank()
         ) +
-          scale_fill_viridis(option="magma") + 
+  scale_color_viridis(discrete=TRUE) + 
 
   labs(title = "evolution of each country's share of the Source",
        x = "Year",
