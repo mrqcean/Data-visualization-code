@@ -36,7 +36,7 @@ emissions_by_share <- emissions_by_share %>%
 # selected is set with a function inside server
 
 # the most nice substance is gwp relevant such as OC,BC,NOx, and CO
-internal_functiongen <- function(selected_substance){
+emission_share_graph <- function(selected_substance){
 # ensure an argument is a string
 #stopifnot(is.character(internal_functiongen))
 
@@ -49,7 +49,7 @@ groups <- select(data,"Name")
 # groups need to be 1xentry_ammount to be used as groups argument
 groups <- t(groups)
 # remove all columns not holding temporal data,  
-# idk why you have to explicitly name the specific rows.
+# idk why you have to explicitly name the specific rows, I tried using a single number but did not work.
 data <- data[-c(1,2, 3)]
 #times is the timestamps/years
 years <- names(data)
@@ -199,18 +199,18 @@ return(interactive_plot)
 # # 3. Render the plot
 # interactive_plot
 
-plot_CO <- internal_functiongen("CO")
-plot_OC <- internal_functiongen("OC")
-plot_NOx <- internal_functiongen("NOx")
-plot_BC <- internal_functiongen("BC")
+#plot_CO <- internal_functiongen("CO")
+#plot_OC <- internal_functiongen("OC")
+#plot_NOx <- internal_functiongen("NOx")
+#plot_BC <- internal_functiongen("BC")
 
-plot_CO
+#plot_CO
 
 # who is burning trees or coal or peat
-plot_BC
+#plot_BC
 
 # who is planting trees
-plot_OC
+#plot_OC
 
 # combusting of coal and oil
 plot_NOx

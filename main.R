@@ -1,4 +1,4 @@
-list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis")
+list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis","gifski")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -32,8 +32,8 @@ sort.df <- filtereddataset %>%
   arrange(GHG, str_sort(Indicator, numeric = TRUE))
 
 # Slice the data (ensure indices 6-8, 14-16, and 22-24 exist)
-CO_data <- slice(sort.df, 6, 7, 8)
-methane_data <- slice(sort.df, 14, 15, 16)
+CO2_data <- slice(sort.df, 6, 7, 8)
+#methane_data <- slice(sort.df, 14, 15, 16)
 NO_data <- slice(sort.df, 22, 23, 24)
 
 # below values are from
@@ -42,23 +42,35 @@ NO_data <- slice(sort.df, 22, 23, 24)
 black_carbon_values <- c(1600, 460, 140)
 organic_carbon_values <- c(-240, -69, -21)
 
+# CO has no direct GWP, instead it has oxidizes CH4(methane), which causes methane to have a longer lifetimealued
+# https://archive.ipcc.ch/ipccreports/tar/wg1/249.htm#tab69
+# CO is very short lived, so GWP is used for long lived gasses. gwp not used in modern climate science for short lived gasses instead gtp
+# this from an article from 1998.... called Fuglestvedt et al. (1996): two-dimensional model including CH4 feedbacks and tropospheric O3 production by CO itself
+# We do not try to calculate it ourselves as indirect requires fancy enviromental models.
+carbon_monoxide_values <- c(10,3.0,	1.0) 
+
 # 1. Extract the value column from the sliced data frames
-CO_values <- CO_data$`GWP kgCO2e/kg GHG`
-methane_values <- methane_data$`GWP kgCO2e/kg GHG`
+CO2_values <- CO2_data$`GWP kgCO2e/kg GHG`
+#methane_values <- methane_data$`GWP kgCO2e/kg GHG`
 NO_values <- NO_data$`GWP kgCO2e/kg GHG`
 
 # 2. Combine all values into a single vector
-all_values <- c(CO_values, methane_values, NO_values,
-                black_carbon_values, organic_carbon_values)
+all_values <- c(CO2_values, 
+                carbon_monoxide_values,
+                NO_values,
+                black_carbon_values, 
+                organic_carbon_values)
 
 
 # Create a clean dataframe for plotting
 # The length of the 'Gas' and 'time_point' vectors must match the length of 'all_values'
 gwp_data_plotting <- data.frame(
-  Gas = rep(c("Carbon Dioxide", "Methane", "Nitrous Oxide", "Black Carbon", "Organic Carbon"), each = 3),
-  time_point = rep(c("GWP20", "GWP100", "GWP500"), times = 5), # Corrected 'times = 3' to 'times = 5'
+  Gas = rep(c("Carbon Dioxide", "Carbon Monoxide", "Nitrous Oxide", "Black Carbon", "Organic Carbon"), each = 3),
+  time_point = rep(c("GWP20", "GWP100", "GWP500"), times = 5), # times = 5 because we have 3x5 data points and we have to have this duplicated so many times for ggpplot.
   value = all_values # Use the combined vector
 )
+
+
 # Ensure the time points stay in chronological order on the X-axis
 gwp_data_plotting$time_point <- factor(gwp_data_plotting$time_point, levels = c("GWP20", "GWP100", "GWP500"))
 
@@ -66,8 +78,11 @@ gwp_data_plotting$time_point <- factor(gwp_data_plotting$time_point, levels = c(
 
 
 ##### emission share
+# this contains 
 source("./scripts/emission-by-share.R")
 
+#emission_share_graph("OC")
+#emissions, NOx, OC,BC, CO
 # each row is its own group, while the column is the y values
 
 # make slider for ammount of years to show relative to start forwards in time
@@ -75,7 +90,7 @@ source("./scripts/emission-by-share.R")
 ## slider in sidebar, later only show when page/tab active
 
 # make some way to show for a single country
-
+# we just input the string can do without caching alright
 
 ##### Emission per industry
 emissions_by_industry <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
@@ -150,10 +165,14 @@ anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = S
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("GWP Dashboard", tabName = "dashboard", icon = icon("chart-line"))
+    menuItem("GWP Dashboard", tabName = "dashboard", icon = icon("chart-line")),
+    selectInput("state", "Choose a state:",
+                list(`East Coast` = list("NY", "NJ", "CT"),
+                     `West Coast` = list("WA", "OR", "CA"),
+                     `Midwest` = list("MN", "WI", "IA"))
   )
 )
-
+)
 
 body <- dashboardBody(
   tabItems(
