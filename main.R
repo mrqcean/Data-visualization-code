@@ -218,7 +218,7 @@ server <- function(input, output) {
   })
   output$animated_barchart <- renderImage({
     outfile <- tempfile(fileext = '.gif')
-    anim <- animate(anim_bar_plot, nframes = 400, fps = 10, 
+    anim <- animate(anim_bar_plot, nframes = 200, fps = 10, 
                     width = 600, height = 400, 
                     renderer = gifski_renderer())
     anim_save(outfile, animation = anim)
