@@ -1,4 +1,4 @@
-list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl",)
+list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -15,7 +15,9 @@ library(viridis) # colorschems for better readability and color blindness
 
 
 #install.packages('gganimate')
+#install.packages('gifski')
 library(gganimate)
+library(gifski)
 
 ###### DEFINING GWP VALUES
 data_gwp <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
@@ -86,9 +88,64 @@ filtereddatasetbar <- filter(
   emissions_by_industry,
   grepl('Denmark|Congo$|Singapore|El Salvador', ...2)
 )
-barcharta <- ggplot(filtereddatasetbar, aes(x = ...2, y = ...4, fill = ...3))+ geom_col()
-barchartb <- ggplot(filtereddatasetbar, aes(x = ...2, y = ...24, fill = ...3))+ geom_col()
-barchartc <- ggplot(filtereddatasetbar, aes(x = ...2, y = ...44, fill = ...3))+ geom_col()
+
+data_a1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...4) %>% mutate(frame = "Year 1970")
+data_b1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...5) %>% mutate(frame = "Year 1971")
+data_c1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...6) %>% mutate(frame = "Year 1972")
+data_d1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...7) %>% mutate(frame = "Year 1973")
+data_e1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...8) %>% mutate(frame = "Year 1974")
+data_f1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...9) %>% mutate(frame = "Year 1975")
+data_g1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...10) %>% mutate(frame = "Year 1976")
+data_h1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...11) %>% mutate(frame = "Year 1977")
+data_i1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...12) %>% mutate(frame = "Year 1978")
+data_j1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...13) %>% mutate(frame = "Year 1979")
+data_k1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...14) %>% mutate(frame = "Year 1980")
+data_l1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...15) %>% mutate(frame = "Year 1981")
+data_m1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...16) %>% mutate(frame = "Year 1982")
+data_n1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...17) %>% mutate(frame = "Year 1983")
+data_o1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...18) %>% mutate(frame = "Year 1984")
+data_p1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...19) %>% mutate(frame = "Year 1985")
+data_q1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...20) %>% mutate(frame = "Year 1986")
+data_r1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...21) %>% mutate(frame = "Year 1987")
+data_s1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...22) %>% mutate(frame = "Year 1988")
+data_t1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...23) %>% mutate(frame = "Year 1989")
+data_u1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...24) %>% mutate(frame = "Year 1990")
+data_w1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...25) %>% mutate(frame = "Year 1991")
+data_v1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...26) %>% mutate(frame = "Year 1992")
+data_x1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...27) %>% mutate(frame = "Year 1993")
+data_y1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...28) %>% mutate(frame = "Year 1994")
+data_z1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...29) %>% mutate(frame = "Year 1995")
+data_a2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...30) %>% mutate(frame = "Year 1996")
+data_b2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...31) %>% mutate(frame = "Year 1997")
+data_c2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...32) %>% mutate(frame = "Year 1998")
+data_d2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...33) %>% mutate(frame = "Year 1999")
+data_e2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...34) %>% mutate(frame = "Year 2000")
+data_f2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...35) %>% mutate(frame = "Year 2001")
+data_g2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...36) %>% mutate(frame = "Year 2002")
+data_h2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...37) %>% mutate(frame = "Year 2003")
+data_i2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...38) %>% mutate(frame = "Year 2004")
+data_j2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...39) %>% mutate(frame = "Year 2005")
+data_k2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...40) %>% mutate(frame = "Year 2006")
+data_l2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...41) %>% mutate(frame = "Year 2007")
+data_m2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...42) %>% mutate(frame = "Year 2008")
+data_n2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...43) %>% mutate(frame = "Year 2009")
+data_o2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...44) %>% mutate(frame = "Year 2010")
+
+
+
+animated_bar_data <- rbind(data_a1, data_b1, data_c1, data_d1, data_e1, data_f1, data_g1, data_h1, data_i1, data_j1, data_k1, data_l1, data_m1,
+                           data_n1, data_o1, data_p1, data_q1, data_r1, data_s1, data_t1, data_u1, data_w1, data_v1, data_x1, data_y1, data_z1,
+                           data_a2, data_b2, data_c2, data_d2, data_e2, data_f2, data_g2, data_h2, data_i2, data_j2, data_k2, data_l2, data_m2,
+                           data_n2, data_o2)
+
+anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = Substance)) +
+  geom_col() +
+  labs(title = 'Emissions: {closest_state}') + # Dynamic title
+  transition_states(frame, transition_length = 2, state_length =  1) +
+  ease_aes('sine-in-out')
+
+
+
 
 
 sidebar <- dashboardSidebar(
@@ -131,8 +188,7 @@ body <- dashboardBody(
                 tabPanel(
                   title = "Bar chart emissions for four countries",
                   icon = icon("bar-chart"),
-                  
-                  plotOutput("barchart1")
+                  imageOutput("animated_barchart")
                 )
               )
              
@@ -160,9 +216,18 @@ server <- function(input, output) {
   output$donought <- renderPlot({
     
   })
-  output$barchart1 <- renderPlot({
-    barcharta
-  })
+  output$animated_barchart <- renderImage({
+    outfile <- tempfile(fileext = '.gif')
+    anim <- animate(anim_bar_plot, nframes = 400, fps = 10, 
+                    width = 600, height = 400, 
+                    renderer = gifski_renderer())
+    anim_save(outfile, animation = anim)
+    list(src = outfile,
+         contentType = 'image/gif',
+         width = 600,
+         height = 400,
+         alt = "Animated emissions bar chart")
+  }, deleteFile = TRUE)
   
 }
 
