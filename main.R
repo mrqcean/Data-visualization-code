@@ -1,4 +1,4 @@
-list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis","gifski")
+list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis", "plotly", "gifski")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -47,7 +47,7 @@ organic_carbon_values <- c(-240, -69, -21)
 # CO is very short lived, so GWP is used for long lived gasses. gwp not used in modern climate science for short lived gasses instead gtp
 # this from an article from 1998.... called Fuglestvedt et al. (1996): two-dimensional model including CH4 feedbacks and tropospheric O3 production by CO itself
 # We do not try to calculate it ourselves as indirect requires fancy enviromental models.
-carbon_monoxide_values <- c(10,3.0,	1.0) 
+carbon_monoxide_values <- c(10,3.0,	1.0)
 
 # 1. Extract the value column from the sliced data frames
 CO2_values <- CO2_data$`GWP kgCO2e/kg GHG`
@@ -55,10 +55,10 @@ CO2_values <- CO2_data$`GWP kgCO2e/kg GHG`
 NO_values <- NO_data$`GWP kgCO2e/kg GHG`
 
 # 2. Combine all values into a single vector
-all_values <- c(CO2_values, 
+all_values <- c(CO2_values,
                 carbon_monoxide_values,
                 NO_values,
-                black_carbon_values, 
+                black_carbon_values,
                 organic_carbon_values)
 
 
@@ -78,7 +78,7 @@ gwp_data_plotting$time_point <- factor(gwp_data_plotting$time_point, levels = c(
 
 
 ##### emission share
-# this contains 
+# this contains
 source("./scripts/emission-by-share.R")
 
 #emission_share_graph("OC")
