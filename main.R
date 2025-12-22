@@ -162,16 +162,17 @@ anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = S
 
 
 
-
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("GWP Dashboard", tabName = "dashboard", icon = icon("chart-line")),
     # first arg is the exported variable name
     selectInput("selected_substance", "Choose a Substance:",
-                list(`East Coast` = list("NY", "NJ", "CT"),
-                     `West Coast` = list("WA", "OR", "CA"),
-                     `Midwest` = list("MN", "WI", "IA")),
-                textOutput("result")
+                list(`Monoxide` = list("CO"),
+                     `Black Carbon` = list("BC"),
+                     `Organic Carbon` = list("OC"),
+                     `Nitrogen Oxide` = list("NOx")
+                     )
+                
   )
 )
 )
@@ -210,7 +211,14 @@ body <- dashboardBody(
                   title = "Bar chart emissions for four countries",
                   icon = icon("bar-chart"),
                   imageOutput("animated_barchart")
+                ),
+                tabPanel(
+                  title = "substance emittance inside each country",
+                  icon = icon("table"),
+                  #plotlyOutput(substance)
+                  plotlyOutput("emit_share")
                 )
+                
               )
 
             )
@@ -234,8 +242,9 @@ server <- function(input, output) {
    gwp_linegraph(gwp_data_plotting)
   })
   
-  output$result <- renderText({
-    paste("You chose", input$selected_substance)
+ 
+  output$emit_share <- renderPlotly({
+    emission_share_graph(input$selected_substance)
   })
   
   output$animated_barchart <- renderImage({
