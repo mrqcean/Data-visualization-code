@@ -1,3 +1,37 @@
+librariesAndDataBarDonut <- function() {
+  library(shiny)
+  library(dplyr)
+  library(ggplot2)
+  library(readxl)
+  
+  stage_emissions <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage",skip = 2)
+  
+  #Filter total kg pollutants for each stage:
+  sum_emissions_by_stage <- stage_emissions %>%
+    filter(!is.na(FOOD_system_stage)) %>%
+    group_by(FOOD_system_stage) %>%
+    summarize(
+      across(`1970`:`2018`, sum, na.rm = TRUE)
+    )
+  
+  #Filter pollutants for gwp conversion:
+  pollutants_filtered <- stage_emissions %>%
+    filter(Substance %in% c("OC", "BC", "NOx", "CO"))
+  
+}
+
+emissionPerStepBar <- function() {
+  
+  
+}
+
+emissionPerStepDonut <- function() {
+  
+  
+}
+
+
+
 # Bar and Donut charts for the total emissions of 4 different countries at 1970 and 2018.
 # The type of emission being energy consumption emissions. 
 
