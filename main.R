@@ -166,10 +166,12 @@ anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = S
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("GWP Dashboard", tabName = "dashboard", icon = icon("chart-line")),
-    selectInput("state", "Choose a state:",
+    # first arg is the exported variable name
+    selectInput("selected_substance", "Choose a Substance:",
                 list(`East Coast` = list("NY", "NJ", "CT"),
                      `West Coast` = list("WA", "OR", "CA"),
-                     `Midwest` = list("MN", "WI", "IA"))
+                     `Midwest` = list("MN", "WI", "IA")),
+                textOutput("result")
   )
 )
 )
@@ -230,11 +232,12 @@ ui <- dashboardPage(
 server <- function(input, output) {
   output$my_line_graph <- renderPlot({
    gwp_linegraph(gwp_data_plotting)
-
   })
-  output$donought <- renderPlot({
-
+  
+  output$result <- renderText({
+    paste("You chose", input$selected_substance)
   })
+  
   output$animated_barchart <- renderImage({
     outfile <- tempfile(fileext = '.gif')
     anim <- animate(anim_bar_plot, nframes = 200, fps = 10,
@@ -252,3 +255,4 @@ server <- function(input, output) {
 
 # 4. RUN APP
 shinyApp(ui, server)
+
