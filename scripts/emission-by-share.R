@@ -6,12 +6,19 @@ country_classification <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet =
 filtereddataset <- country_classification %>%
   filter(grepl('Europe', .data[["Regional grouping"]]))
 
-
-
+# removing greenland as all substances have the same value from  1997 to 2003
+# get all countries but not Greenland
+filtereddataset <- filtereddataset %>%
+  filter(!grepl("Greenland", `Country name`))
 # filter by eu contries
 # convert to 1,n vector, we chose the country name as the column
 # this can also be done in base R
 countries_filter <- dplyr::pull(filtereddataset, `Country name`)
+
+
+
+
+
 
 emissions_by_share <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 5 - FOOD shares",skip = 2)
 #emisisons_by_share_stacked <- function(data) {
@@ -196,7 +203,14 @@ plot_CO <- internal_functiongen("CO")
 plot_OC <- internal_functiongen("OC")
 plot_NOx <- internal_functiongen("NOx")
 plot_BC <- internal_functiongen("BC")
+
 plot_CO
+
+# who is burning trees or coal or peat
 plot_BC
+
+# who is planting trees
 plot_OC
+
+# combusting of coal and oil
 plot_NOx
