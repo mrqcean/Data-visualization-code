@@ -104,6 +104,7 @@ filtereddatasetbar <- filter(
   grepl('Denmark|Congo$|Singapore|El Salvador', ...2)
 )
 
+
 data_a1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...4) %>% mutate(frame = "Year 1970")
 data_b1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...5) %>% mutate(frame = "Year 1971")
 data_c1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...6) %>% mutate(frame = "Year 1972")
@@ -217,6 +218,10 @@ body <- dashboardBody(
                   icon = icon("table"),
                   #plotlyOutput(substance)
                   plotlyOutput("emit_share")
+                ),
+                tabPanel(
+                  title = "regions output",
+                  plotOutput("emit_gbarchart")
                 )
                 
               )
@@ -259,6 +264,10 @@ server <- function(input, output) {
          height = 400,
          alt = "Animated emissions bar chart")
   }, deleteFile = TRUE)
+  
+  output$emit_gbarchart <- renderPlot({
+    pub_emission_share_grouped_barchart()
+  })
 
 }
 
