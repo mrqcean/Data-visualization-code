@@ -4,38 +4,120 @@
 # import page with all country types, used for filtering countries out when doing a graph
 country_classification <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 2- countries",skip = 1)
 # a more efficient way to sort rows my column values inside the name of regional grouping 
-filtereddataset <- country_classification %>%
-  filter(grepl('Europe', .data[["Regional grouping"]]))
-
-
+# filter by eu contries
+# not going to rename filtered dataset to europe
+# this is multiple regions so might have to be cut down
 # removing greenland as all substances have the same value from  1997 to 2003
 # get all countries but not Greenland
-filtereddataset <- filtereddataset %>%
+country_classification <- country_classification %>%
   filter(!grepl("Greenland", `Country name`))
-# filter by eu contries
+
+
 # convert to 1,n vector, we chose the country name as the column
 # this can also be done in base R
 countries_filter <- dplyr::pull(filtereddataset, `Country name`)
 
-
-
-
-
-
+# the dataset containing the food shares for inside each own country, I does not add up to 1 globally
 emissions_by_share <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 5 - FOOD shares",skip = 2)
-#emisisons_by_share_stacked <- function(data) {
-# remove climate pollution stats, pm10,pm2.5, VOC and keep green house gas affecting gasses.
+
+######## WHICH REGION RELIES ON WHAT EMISSIONS THE MOST BAR CHART
+
+
+# hvor er mine macroer'er :( så skulle jeg ikke assigne vars manuelt
+# this returns vectors 1,n
+get_regiondata <- function(region_string) {
+  return( 
+    country_classification %>% filter(grepl(region_string, .data[["Regional grouping"]]))
+                                      # convert the column Country name, of piped in db to a vector
+                                      %>%dplyr::pull(`Country name`)
+                                      
+  )
+}
+
+# print is needed to allow unique() to not head
+#print(unique(country_classification[, 3]), n = Inf)
+# very big includes 25 countries each maybe cut as region is too wide
+#db_Western_Africa <- get_regiondata('Western_Africa')
+#db_Southern_Africa <- get_regiondata('Southern_Africa')
+
+db_Middle_East <- get_regiondata('Middle_East')
+db_Southeastern_Asia <- get_regiondata('Southeastern Asia')
+db_Oceania <- get_regiondata('Oceania')
+db_Rest_Central_America <- get_regiondata('Rest Central America')
+db_Rest_South_America <- get_regiondata('Rest South America')
+# generate for average region and substance, then use that value in a bar chart with the other regions
+  # So we have
+
+# regions is a 1,n vector
+
+
+f_internal_substance <- function(substance){
+  filtered <- emissions_by_share %>% filter(Substance %in% c(substance))
+  # filter by substance,  
+  
+  # filter share by region countries, and return the median for 2018
+  f_internal_get_med_region <- function(db_region) {
+    return(
+      # then get the year 2018 column as 1,n vector and take the median of that
+    filter(filtered, Name %in% db_region) %>% pull("2018") %>% median()
+    )
+  }
+  
+  
+  # we only have 1 var per region, ensure that the data frame is created before 
+  db_list <- list(
+    "Western Africa" = db_Western_Africa,
+    "Southeastern Asia" = db_Southeastern_Asia,
+    "Rest Central America" = db_Rest_Central_America,
+    "Northern Africa" = db_Northern_Africa,
+    "Middle East" = db_Middle_East,
+    "Oceania" = db_Oceania,
+    "Rest of South America" = db_Rest_South_America 
+  )
+  
+  return ( data.frame(
+    region = names(db_list),
+    value  = sapply(db_list, f_internal_get_med_region)
+  )
+  )
+  
+}
+
+f_internal_substance("BC")
+f_internal_substance("OC")
+
+
+# combine again and sort by country
+# how do i make the gap for each
+
+eys# why are lambda functions not a thing >:(
+# calc median to find what value is the most reprensentitive
+
+ggplot(df, aes(x=region, y=value,fill=region)) + 
+  geom_bar(stat = "identity") +
+  # maybe use another color for bars such that text is more visible
+  geom_text(aes(label = round(value,3)), vjust = -0.5) +
+  coord_flip()
+
+
+####### START OF EUROPE LINE GRAPH
+
+# OLD just an idea remove climate pollution stats, pm10,pm2.5, VOC and keep green house gas affecting gasses.
+  
+  # get what countries are in eastern europe, oecd europe, midde europe and so on.
+  filtereddataset <- country_classification %>%
+  filter(grepl('Europe', .data[["Regional grouping"]]))
+# filter emssions rows for only countries that are in Europe
 emissions_by_share <- emissions_by_share %>%
   filter(Name %in% countries_filter)
-# i am going to make 3 graphs instead of 1 which can switc(eyes over memory...)
-# which just 3 wrapper functions passing argument "Substance" to main function
 
 
 
-#emissions_by_share <- emissions_by_share %>%
+
 #  filter(Substance %in% c("OC", "BC", "NOx", "CO"))
 # just use a var as we only have 4 values, instead of implementing enums in R
-# selected is set with a function inside server
+# selected substances is set with the a drop down menu sidebar inside server, 
+#which achieves the same as an enum just graphically
 
 # the most nice substance is gwp relevant such as OC,BC,NOx, and CO
 emission_share_graph <- function(selected_substance){
@@ -188,3 +270,4 @@ return(interactive_plot)
 
 # combusting of coal and oil
 #plot_NOx
+
