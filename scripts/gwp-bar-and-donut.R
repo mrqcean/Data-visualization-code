@@ -6,7 +6,7 @@ librariesAndDataBarDonut <- function() {
   
   stage_emissions <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage",skip = 2)
   
-  #Filter total kg pollutants for each stage:
+  #Filter total kton pollutants for each stage:
   sum_emissions_by_stage <- stage_emissions %>%
     filter(!is.na(FOOD_system_stage)) %>%
     group_by(FOOD_system_stage) %>%
@@ -20,10 +20,26 @@ librariesAndDataBarDonut <- function() {
   
 }
 
-emissionPerStepBar <- function() {
-  
-  
+emissionPerStepBar <- function(year) {
+  #year = "2018"
+  bardata <- select(sum_emissions_by_stage, FOOD_system_stage, year)
+  p <- ggplot(bardata, aes(x = FOOD_system_stage, y = .data[[year]])) + 
+    geom_col() + 
+    geom_text(
+      aes(label = scales::comma(.data[[year]])),
+      vjust = -0.3,
+      size = 3
+    ) +
+    scale_y_continuous(labels = scales::comma) +
+    labs(
+      title = paste("Emissions by Food System Stage in", year),
+      x = "Food System Stage",
+      y = "Total Pollutant Emissions (kilotonnes)"
+    ) + theme_bw()
+  #p
+  return(p)
 }
+
 
 emissionPerStepDonut <- function() {
   
