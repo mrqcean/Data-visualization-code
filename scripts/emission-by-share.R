@@ -13,9 +13,7 @@ country_classification <- country_classification %>%
   filter(!grepl("Greenland", `Country name`))
 
 
-# convert to 1,n vector, we chose the country name as the column
-# this can also be done in base R
-countries_filter <- dplyr::pull(filtereddataset, `Country name`)
+
 
 # the dataset containing the food shares for inside each own country, I does not add up to 1 globally
 emissions_by_share <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 5 - FOOD shares",skip = 2)
@@ -106,14 +104,16 @@ f_internal_substance <- function(substance){
 # use the package for color schemes
 # thanks for providing a working example chakravarty
 # https://stackoverflow.com/questions/40211451/geom-text-how-to-position-the-text-on-bar-as-i-want
-pub_emission_share_grouped_barchart <- function(){
-  data <- do.call(
+data <- do.call(
     rbind.data.frame,
     # returns a list lapply is run values as input to argument 2 which is a function
     # YES Lisp style my beloved, you just pass arguments to function which takes a list as arg and it returns a list
     # pm2.5 and pm10 are not included as they are purely air pollution
     lapply(c("BC", "OC", "CO","NMVOC","NH3","SO2","NOx"), f_internal_substance)
   )
+
+pub_emission_share_grouped_barchart <- function(){
+  
 return (ggplot(data) + 
   geom_bar(
     # OBS axis flipped because of coord_flip()
@@ -132,6 +132,8 @@ return (ggplot(data) +
   theme_bw() + scale_fill_viridis_d()
 )
 }
+
+pub_emission_share_grouped_barchart()
   #theme_minimal() 
 #+ scale_color_viridis_d()
 
@@ -142,6 +144,9 @@ return (ggplot(data) +
   # get what countries are in eastern europe, oecd europe, midde europe and so on.
   filtereddataset <- country_classification %>%
   filter(grepl('Europe', .data[["Regional grouping"]]))
+  # convert to 1,n vector, we chose the country name as the column
+  # this can also be done in base R
+  countries_filter <- dplyr::pull(filtereddataset, `Country name`)
 # filter emssions rows for only countries that are in Europe
 emissions_by_share <- emissions_by_share %>%
   filter(Name %in% countries_filter)
@@ -241,64 +246,3 @@ interactive_plot <- ggplotly(p, tooltip = "text")
 
 return(interactive_plot)
 }
-# library(ggplot2)
-# library(plotly)
-# # TODO step over colors instead of using closest such that they bleed over
-# # modify data in real time based on who becomes top, or just make it an animated graph
-# # 1. Build the static ggplot object
-# 
-# fig <- 
-# p <- ggplot(plotdata, aes(x = as.numeric(day), 
-#                           y = amount, 
-#                           fill = category,
-#                           # Custom hover text
-#                           text = paste("Country:", category, 
-#                                        "<br>Year:", day, 
-#                                        "<br>Value:", format(amount, big.mark=",")))) + 
-#   geom_area(aes(group = category,)) +
-#   # THE FIX: Invisible points to anchor the tooltips
-#   # text only takes one vector as argument it does not dynamically update the other args, 
-#   #this is why year, value are not updated.
-#   geom_point(aes(text = paste("Country:", category, 
-#                               "<br>Year:", day, 
-#                               "<br>Value:", round(amount, 2))),alpha = 0,
-#              # 2f means 2 decimals right
-#              hovertemplate = paste('<i>Price</i>: $%{amount:.2f}',
-#                         '<br><b>X</b>: %{day}<br>',
-#                         '<b>%{text}</b>')
-#   ) +
-#   theme_minimal() +
-#   theme(legend.position = "none") + # Keep the legend hidden so the graph has space
-#   labs(title = "Global Trends (Zoomable)",
-#        x = "Year",
-#        y = selected_substance)
-# 
-# # 2. Convert to plotly and add the Range Slider
-# interactive_plot <- ggplotly(p, tooltip = "text") %>%
-#   layout(
-#     xaxis = list(
-#       rangeslider = list(type = "date"), # Adds the zoom slider at the bottom
-#       rangeselector = list(
-#         buttons = list(
-#           list(count = 20, label = "10y", step = "year", stepmode = "backward"),
-#           list(step = "all")
-#         )
-#       )
-#     )
-#   )
-# 
-# # 3. Render the plot
-# interactive_plot
-
-#plot_CO <- internal_functiongen("CO")
-#plot_OC <- internal_functiongen("OC")
-#plot_NOx <- internal_functiongen("NOx")
-#plot_BC <- internal_functiongen("BC")
-
-#plot_CO
-
-# who is burning trees or coal or peat
-#plot_BC
-
-# who is planting trees
-#plot_OC
