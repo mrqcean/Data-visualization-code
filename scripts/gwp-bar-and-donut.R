@@ -23,7 +23,7 @@ librariesAndDataBarDonut <- function() {
 emissionPerStepBar <- function(year) {
   #year = "2018"
   bardata <- select(sum_emissions_by_stage, FOOD_system_stage, year)
-  p <- ggplot(bardata, aes(x = FOOD_system_stage, y = .data[[year]])) + 
+  p <- ggplot(bardata, aes(x = FOOD_system_stage, y = .data[[year]], fill = FOOD_system_stage)) + 
     geom_col() + 
     geom_text(
       aes(label = scales::comma(.data[[year]])),
@@ -33,9 +33,15 @@ emissionPerStepBar <- function(year) {
     scale_y_continuous(labels = scales::comma) +
     labs(
       title = paste("Emissions by Food System Stage in", year),
-      x = "Food System Stage",
-      y = "Total Pollutant Emissions (kilotonnes)"
-    ) + theme_bw()
+      x = NULL,
+      y = "Total Pollutant Emissions (kilotonnes)",
+      fill = "Food System Stage"
+    ) + theme(
+      legend.position = c(.05, .95),
+      legend.justification = c("left", "top"),
+      legend.box.just = "left",
+      legend.margin = margin(6, 6, 6, 6)
+    )
   #p
   return(p)
 }
@@ -52,51 +58,51 @@ emissionPerStepDonut <- function() {
 # The type of emission being energy consumption emissions. 
 
 
-#Bar chart 1970
-ggplot(countries, aes(x=...2, y=...7)) + 
-  geom_bar(stat = "identity") +
-  scale_fill_brewer(palette = "Set1") +
-  theme(legend.position="none")
-
-
-#Bar chart 2018
-ggplot(countries, aes(x=...2, y=...50)) + 
-  geom_bar(stat = "identity")
-
-
-## Donut chart for 1970
-# Compute percentages
-countries$fraction = countries$...7 / sum(countries$...7)
-
-# Compute the cumulative percentages (top of each rectangle)
-countries$ymax = cumsum(countries$fraction)
-
-# Compute the bottom of each rectangle
-countries$ymin = c(0, head(countries$ymax, n=-1))
-
-# Make the plot
-ggplot(countries, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=...2)) +
-  geom_rect() +
-  coord_polar(theta="y") + # Try to remove that to understand how the chart is built initially
-  xlim(c(2, 4)) # Try to remove that to see how to make a pie chart
-
-
-## Donut chart for 2018
-# Compute percentages
-countries$fraction = countries$...50 / sum(countries$...50)
-
-# Compute the cumulative percentages (top of each rectangle)
-countries$ymax = cumsum(countries$fraction)
-
-# Compute the bottom of each rectangle
-countries$ymin = c(0, head(countries$ymax, n=-1))
-
-# Make the plot
-ggplot(countries, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=...2)) +
-  geom_rect() +
-  coord_polar(theta="y") + # Try to remove that to understand how the chart is built initially
-  xlim(c(2, 4)) # Try to remove that to see how to make a pie chart
-
-#For animated graphs
-install.packages("gganimate")
-library(gganimate)
+# #Bar chart 1970
+# ggplot(countries, aes(x=...2, y=...7)) + 
+#   geom_bar(stat = "identity") +
+#   scale_fill_brewer(palette = "Set1") +
+#   theme(legend.position="none")
+# 
+# 
+# #Bar chart 2018
+# ggplot(countries, aes(x=...2, y=...50)) + 
+#   geom_bar(stat = "identity")
+# 
+# 
+# ## Donut chart for 1970
+# # Compute percentages
+# countries$fraction = countries$...7 / sum(countries$...7)
+# 
+# # Compute the cumulative percentages (top of each rectangle)
+# countries$ymax = cumsum(countries$fraction)
+# 
+# # Compute the bottom of each rectangle
+# countries$ymin = c(0, head(countries$ymax, n=-1))
+# 
+# # Make the plot
+# ggplot(countries, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=...2)) +
+#   geom_rect() +
+#   coord_polar(theta="y") + # Try to remove that to understand how the chart is built initially
+#   xlim(c(2, 4)) # Try to remove that to see how to make a pie chart
+# 
+# 
+# ## Donut chart for 2018
+# # Compute percentages
+# countries$fraction = countries$...50 / sum(countries$...50)
+# 
+# # Compute the cumulative percentages (top of each rectangle)
+# countries$ymax = cumsum(countries$fraction)
+# 
+# # Compute the bottom of each rectangle
+# countries$ymin = c(0, head(countries$ymax, n=-1))
+# 
+# # Make the plot
+# ggplot(countries, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=...2)) +
+#   geom_rect() +
+#   coord_polar(theta="y") + # Try to remove that to understand how the chart is built initially
+#   xlim(c(2, 4)) # Try to remove that to see how to make a pie chart
+# 
+# #For animated graphs
+# install.packages("gganimate")
+# library(gganimate)

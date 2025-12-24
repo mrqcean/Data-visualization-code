@@ -19,10 +19,15 @@ library(viridis) # colorschems for better readability and color blindness
 library(gganimate)
 library(gifski)
 
+#Script Sources:
+source("./scripts/gwp-bar-and-donut.R")
+source("./scripts/gwp-cumulative-over-time.R")
+source("./scripts/emission-by-share.R")
+
+
 ###### DEFINING GWP VALUES
 data_gwp <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
-source("./scripts/gwp-cumulative-over-time.R")
-# source("./scripts/gwp-bar-and-donut.R")
+# 
 # Filter the dataset for specific gases
 filtereddataset <- data_gwp %>%
   filter(grepl('NH3|OC|BC|Nitrous oxide|SO2|Carbon dioxide|Methane$', GHG))
@@ -79,7 +84,7 @@ gwp_data_plotting$time_point <- factor(gwp_data_plotting$time_point, levels = c(
 
 ##### emission share
 # this contains
-source("./scripts/emission-by-share.R")
+# source("./scripts/emission-by-share.R")
 
 #emission_share_graph("OC")
 #emissions, NOx, OC,BC, CO
@@ -226,6 +231,27 @@ body <- dashboardBody(
                     style = "border: 1px solid green; padding: 10px; margin-top: 10px;",
                     "The group emissions inside each region do not add up to 1, as these are the normalized food share of total caused emissions"
                   )
+                ),
+                tabPanel(
+                  title = "Total Pollutant Emissions",
+                  # App title ----
+                  titlePanel("Select Year"),
+                  
+                  # Sidebar layout with input and output definitions ----
+                  sidebarLayout(
+                    
+                    # Sidebar to demonstrate various slider options ----
+                    sidebarPanel(
+                      
+                      # Input: Simple integer interval ----
+                      sliderInput("year", "Year:",
+                                  min = 1970, max = 2018,
+                                  value = 1970, sep = NULL),
+                    ),
+                    mainPanel(
+                      plotOutput("total_emissions_bar")
+                    )
+                  )
                 )
                 
               )
@@ -271,6 +297,10 @@ server <- function(input, output) {
   
   output$emit_gbarchart <- renderPlot({
     pub_emission_share_grouped_barchart()
+  })
+  
+  output$total_emissions_bar <- renderPlot({
+    emissionPerStepBar(input$year)
   })
 
 }
