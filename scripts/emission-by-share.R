@@ -117,6 +117,7 @@ pub_emission_share_grouped_barchart <- function(){
 return (ggplot(data) + 
   geom_bar(
     # OBS axis flipped because of coord_flip()
+    # how Do i rename the axis 
     aes(x = substance, y = value, fill = region, group = region), 
     # dodge is how it splits
     stat='identity', position = 'dodge'
@@ -127,6 +128,9 @@ return (ggplot(data) +
     position = position_dodge(width = 1),
     inherit.aes = TRUE
   ) + 
+    # write what the lines should be writen, 
+    #why is that the legend text is, based on the variable for setting if the columns should be filled with color?????
+    labs(x = "Share for food related emissions", y = "Median share inside each region", fill = "Region") +
   coord_flip() +
   # theme must be bw, for scale_fill_viris_d to work
   theme_bw() + scale_fill_viridis_d()

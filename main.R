@@ -220,8 +220,12 @@ body <- dashboardBody(
                   plotlyOutput("emit_share")
                 ),
                 tabPanel(
-                  title = "regions output",
-                  plotOutput("emit_gbarchart")
+                  title = "Regional substance emissions",
+                  plotOutput("emit_gbarchart"),
+                  div(
+                    style = "border: 1px solid green; padding: 10px; margin-top: 10px;",
+                    "The group emissions inside each region do not add up to 1, as these are the normalized food share of total caused emissions"
+                  )
                 )
                 
               )
