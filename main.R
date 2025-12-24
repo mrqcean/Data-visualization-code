@@ -132,8 +132,6 @@ calc_country_sum <- function(country){
   # access manually even though it is not smart if we add more green house gasses
   # best way would be mutating to same chem name or full name, alfabetical sorting and doing and use the values 
   
-  
-  
   gwp100val <- df_gwp100$value
   bc_factor <- gwp100val[4]
   oc_factor <- gwp100val[5]
@@ -154,13 +152,12 @@ calc_country_sum("Denmark")
   
 # filter by year 2018
 # for each country extract a the sum and return the country,sum dataframe for all countries 
-# TODO this is unfinished
 data <- do.call(
   rbind.data.frame,
   # returns a list lapply is run values as input to argument 2 which is a function
   # YES Lisp style my beloved, you just pass arguments to function which takes a list as arg and it returns a list
   # pm2.5 and pm10 are not included as they are purely air pollution
-  lapply(countries, calc_country_sum)
+  lapply(as.list(countries), calc_country_sum)
 )
 data
 # convert values per country
