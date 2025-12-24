@@ -13,14 +13,15 @@ librariesAndDataBarDonut <- function() {
     summarize(
       across(`1970`:`2018`, sum, na.rm = TRUE)
     )
+  # 
+  # #Filter pollutants for gwp conversion:
+  # pollutants_filtered <- stage_emissions %>%
+  #   filter(Substance %in% c("OC", "BC", "NOx", "CO"))
   
-  #Filter pollutants for gwp conversion:
-  pollutants_filtered <- stage_emissions %>%
-    filter(Substance %in% c("OC", "BC", "NOx", "CO"))
-  
+  return(sum_emissions_by_stage)
 }
 
-emissionPerStepBar <- function(year) {
+emissionPerStepBar <- function(year, sum_emissions_by_stage) {
   #year = 2018
   year = as.character(year)
   bardata <- select(sum_emissions_by_stage, FOOD_system_stage, year)
@@ -31,7 +32,7 @@ emissionPerStepBar <- function(year) {
       vjust = -0.3,
       size = 3
     ) +
-    scale_y_continuous(labels = scales::comma) +
+    scale_y_continuous(limits = c(0,400000), labels = scales::comma) +
     labs(
       title = paste("Emissions by Food System Stage in", year),
       x = NULL,
@@ -43,7 +44,7 @@ emissionPerStepBar <- function(year) {
       legend.box.just = "left",
       legend.margin = margin(6, 6, 6, 6)
     )
-  #p
+    #p
   return(p)
 }
 
