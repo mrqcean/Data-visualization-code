@@ -1,4 +1,4 @@
-list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis", "plotly", "gifski")
+# list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis", "plotly", "gifski")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -79,7 +79,9 @@ gwp_data_plotting <- data.frame(
 # Ensure the time points stay in chronological order on the X-axis
 gwp_data_plotting$time_point <- factor(gwp_data_plotting$time_point, levels = c("GWP20", "GWP100", "GWP500"))
 names(gwp_data_plotting)
+### GWP VALUES FOR REUSE FOR OTHER GRAPHS 
 df_gwp100 <- filter(gwp_data_plotting,`time_point` %in% "GWP100") 
+
 
 
 ##### emission share
@@ -101,6 +103,67 @@ df_gwp100 <- filter(gwp_data_plotting,`time_point` %in% "GWP100")
 emissions_by_industry <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
 # "non-dr" congo, elsalvador, singapore og danmark
 # these are row  274, 1191,1167 ,361
+
+# converted gwp values
+names(emissions_by_industry)
+emissions_indu_correct_names <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country",skip = 2)
+names(emissions_indu_correct_names)
+gasses <- c("CO", "NOx"  , "BC"  ,  "OC")
+# do this transformation before extractiong country names to ensure dimensions are correct for plotting
+# only keep rows which contain gwp generating gasses
+ emissions_indu_correct_names <- filter(emissions_indu_correct_names, Substance %in% gasses)
+# remove years which are not 2018
+ # remove all columns which to not contain name, substance, or 2018 as the others are other years
+ emissions_indu_correct_names <-  select(emissions_indu_correct_names, "2018", "Substance", "Name")
+ 
+# arrow pointer indicates the way flows
+countries <-  emissions_indu_correct_names %>% pull("Name") 
+# countries is a vector to get looped through for generating dataframe with emissions per country
+
+
+
+
+# calc_country_sum takes a string as arg
+# returns a data frame contry,sum
+calc_country_sum <- function(country){
+  emissions_indu_correct_names
+  df <- filter(emissions_indu_correct_names, Name %in% c(country) )
+  # access manually even though it is not smart if we add more green house gasses
+  # best way would be mutating to same chem name or full name, alfabetical sorting and doing and use the values 
+  
+  
+  
+  gwp100val <- df_gwp100$value
+  bc_factor <- gwp100val[4]
+  oc_factor <- gwp100val[5]
+  no_factor <- gwp100val[3]
+  co_factor <- gwp100val[2]
+  country_val <- df$`2018`
+  #overwrite the value to the column, this is peak unmaintainable code
+  conv_vals <- c(bc_factor*country_val[1], 
+                 co_factor *country_val[2], 
+                 no_factor * country_val[3], 
+                 oc_factor*country_val[4]
+                 )
+  
+  
+  return(data.frame(country,sum(conv_vals)))
+}
+calc_country_sum("Denmark")
+  
+# filter by year 2018
+# for each country extract a the sum and return the country,sum dataframe for all countries 
+# TODO this is unfinished
+data <- do.call(
+  rbind.data.frame,
+  # returns a list lapply is run values as input to argument 2 which is a function
+  # YES Lisp style my beloved, you just pass arguments to function which takes a list as arg and it returns a list
+  # pm2.5 and pm10 are not included as they are purely air pollution
+  lapply(countries, calc_country_sum)
+)
+data
+# convert values per country
+
 countries <- slice(emissions_by_industry, 274,1191,1167,361)
 
 
