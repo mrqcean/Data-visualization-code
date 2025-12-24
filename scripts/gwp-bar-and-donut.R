@@ -21,7 +21,8 @@ librariesAndDataBarDonut <- function() {
 }
 
 emissionPerStepBar <- function(year) {
-  #year = "2018"
+  #year = 2018
+  year = as.character(year)
   bardata <- select(sum_emissions_by_stage, FOOD_system_stage, year)
   p <- ggplot(bardata, aes(x = FOOD_system_stage, y = .data[[year]], fill = FOOD_system_stage)) + 
     geom_col() + 
