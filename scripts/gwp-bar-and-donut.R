@@ -32,7 +32,7 @@ emissionPerStepBar <- function(year, sum_emissions_by_stage) {
       vjust = -0.3,
       size = 3
     ) +
-    scale_y_continuous(limits = c(0,400000), labels = scales::comma) +
+    scale_y_continuous(limit = c(0,500000), labels = scales::comma) +
     labs(
       title = paste("Emissions by Food System Stage in", year),
       x = NULL,
