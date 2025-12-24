@@ -73,8 +73,8 @@ gwp_data_plotting <- data.frame(
 
 # Ensure the time points stay in chronological order on the X-axis
 gwp_data_plotting$time_point <- factor(gwp_data_plotting$time_point, levels = c("GWP20", "GWP100", "GWP500"))
-
-
+names(gwp_data_plotting)
+df_gwp100 <- filter(gwp_data_plotting,`time_point` %in% "GWP100") 
 
 
 ##### emission share

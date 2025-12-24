@@ -86,19 +86,14 @@ f_internal_substance <- function(substance){
   )
   
 }
+
 # value is to be Substance 
 
 # why are lambda functions not a thing >:(, this might be the closest
 # use the first argument on the values from arg 2, 
 
 
-
 # calc median to find what value is the most reprensentitive
-
-# this barchart is correct, just need the correct values
-# fill is the same as group as it is the thing found on the legend?
-
-
 
 # maybe change colors as red and brown together is a bad colorscheme
 # use the package for color schemes
