@@ -1,4 +1,4 @@
-list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis", "plotly", "gifski")
+list.of.packages <- c("ggplot2", "shiny","s2", "gganimate","dplyr","readxl","viridis", "plotly", "gifski", "maps")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -18,6 +18,7 @@ library(viridis) # colorschems for better readability and color blindness
 #install.packages('gifski')
 library(gganimate)
 library(gifski)
+library(maps)
 
 #Script Sources:
 source("./scripts/gwp-bar-and-donut.R")
@@ -161,16 +162,38 @@ data <- do.call(
 )
 data
 # convert values per country
+colnames(data) <- c("Country", "Total_Emissions")
+
+# Source: https://plotly.com/r/choropleth-maps/
+interactive_heat_map <- plot_geo(data)
+interactive_heat_map <- interactive_heat_map %>% add_trace(
+    z = ~Total_Emissions,
+    color = ~Total_Emissions,
+    colors = "YlOrRd", 
+    locations = ~Country,
+    locationmode = 'country names',
+    marker = list(line = list(width = 1))
+  )
+
+interactive_heat_map <- interactive_heat_map %>% colorbar(title = "Total GWP Equalized Sum")
+interactive_heat_map <- interactive_heat_map %>% layout(
+    title = "GWP100 Equalized Sum for Countries Food Emissions Heat Map 2018",
+    geo = list(
+      showframe = FALSE,
+      showcoastlines = FALSE,
+      projection = list(type = 'Mercator')
+    )
+  )
 
 countries <- slice(emissions_by_industry, 274,1191,1167,361)
 
-
+# Filter dataset for four countries used in bar chart anim
 filtereddatasetbar <- filter(
   emissions_by_industry,
   grepl('Denmark|Congo$|Singapore|El Salvador', ...2)
 )
 
-
+# Gather the data for the different years from 1970 to 2010
 data_a1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...4) %>% mutate(frame = "Year 1970")
 data_b1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...5) %>% mutate(frame = "Year 1971")
 data_c1 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...6) %>% mutate(frame = "Year 1972")
@@ -214,7 +237,7 @@ data_n2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amoun
 data_o2 <- filtereddatasetbar %>% select(Country = ...2, Substance = ...3, Amount = ...44) %>% mutate(frame = "Year 2010")
 
 
-
+# Bind the data gathered
 animated_bar_data <- rbind(data_a1, data_b1, data_c1, data_d1, data_e1, data_f1, data_g1, data_h1, data_i1, data_j1, data_k1, data_l1, data_m1,
                            data_n1, data_o1, data_p1, data_q1, data_r1, data_s1, data_t1, data_u1, data_w1, data_v1, data_x1, data_y1, data_z1,
                            data_a2, data_b2, data_c2, data_d2, data_e2, data_f2, data_g2, data_h2, data_i2, data_j2, data_k2, data_l2, data_m2,
@@ -275,9 +298,15 @@ body <- dashboardBody(
                   #plotOutput("donought")
                 ),
                 tabPanel(
-                  title = "Bar chart emissions for four countries",
+                  title = "Animated bar chart emissions for four countries",
                   icon = icon("bar-chart"),
                   imageOutput("animated_barchart")
+                ),
+                tabPanel(
+                  title = "GWP100 Equalized Sum Heat Map 2018",
+                  icon = icon("heat-map"),
+                  plotlyOutput("world_heat_map", height = "1000px")
+                  
                 ),
                 tabPanel(
                   title = "substance emittance inside each country",
@@ -363,6 +392,10 @@ server <- function(input, output) {
   
   output$total_emissions_bar <- renderPlot({
     emissionPerStepBar(input$year, sum_emissions_by_stage)
+  })
+  
+  output$world_heat_map <- renderPlotly({
+    interactive_heat_map
   })
 
 }
