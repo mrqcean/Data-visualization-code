@@ -164,6 +164,7 @@ data
 # convert values per country
 colnames(data) <- c("Country", "Total_Emissions")
 
+#Interactive plotly heat map
 # Source: https://plotly.com/r/choropleth-maps/
 interactive_heat_map <- plot_geo(data)
 interactive_heat_map <- interactive_heat_map %>% add_trace(
@@ -249,8 +250,15 @@ anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = S
   transition_states(frame, transition_length = 2, state_length =  1) +
   ease_aes('sine-in-out')
 
+emissions_by_stage <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage", skip = 2)
+emissions_by_stage_clean <- emissions_by_stage %>%
+  filter(!is.na(FOOD_system_stage), !is.na(`2018`))
+boxplot_stage <- ggplot(emissions_by_stage_clean, aes(x=as.factor(FOOD_system_stage), y=`2018`)) +
+  geom_boxplot(fill="lightblue", alpha=0.2) +
+  xlab("Stage") +
+  ylab("Kton Substances/Year")
 
-
+interactive_boxplot_stage <- ggplotly(boxplot_stage)
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
@@ -304,7 +312,7 @@ body <- dashboardBody(
                 ),
                 tabPanel(
                   title = "GWP100 Equalized Sum Heat Map 2018",
-                  icon = icon("heat-map"),
+                  icon = icon("chart-area"),
                   plotlyOutput("world_heat_map", height = "1000px")
                   
                 ),
@@ -343,6 +351,11 @@ body <- dashboardBody(
                       plotOutput("total_emissions_bar")
                     )
                   )
+                ),
+                tabPanel(
+                  title = "Boxplot Food Stage Emissions",
+                  icon = icon("chart-column"),
+                  plotlyOutput("boxplot_stages")
                 )
                 
               )
@@ -396,6 +409,10 @@ server <- function(input, output) {
   
   output$world_heat_map <- renderPlotly({
     interactive_heat_map
+  })
+  
+  output$boxplot_stages <- renderPlotly({
+    interactive_boxplot_stage
   })
 
 }
