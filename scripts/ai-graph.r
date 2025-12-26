@@ -2,7 +2,7 @@ library(shiny)
 library(tidyverse)
 library(plotly)
 library(readxl)
-emissions_by_industry <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
+emissions_by_industry <- read_excel("../datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
 countries <- slice(emissions_by_industry, 274,1191,1167,361)
 
 filtereddatasetbar <- filter(
@@ -56,9 +56,11 @@ ui <- fluidPage(
     )
   )
 )
-
+#print(df_long,n = Inf)
+#df_long
 server <- function(input, output) {
-
+# how Do I ensure that the new rows added for a different substance are not added to the previous substances dataframe
+  
   filtered_data <- reactive({
     df_long %>%
       filter(
@@ -74,6 +76,7 @@ server <- function(input, output) {
       y = ~emission,
       color = ~country,
       type = "scatter",
+      split = ~emission_type,
       mode = "lines+markers",
       hoverinfo = "text",
       text = ~paste0(
@@ -87,7 +90,10 @@ server <- function(input, output) {
         title = "Emission Trends (Click Filters on Left)",
         xaxis = list(title = "Year"),
         yaxis = list(title = "Emission"),
-        legend = list(orientation = "h")
+        #legend = list(orientation = "w")
+        showlegend = FALSE
+        # show text hover in comparion mode by default. text box too big
+        #hovermode = "x unified"
       )
   })
 }
