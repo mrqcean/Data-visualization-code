@@ -252,10 +252,13 @@ anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = S
 
 emissions_by_stage <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage", skip = 2)
 emissions_by_stage_clean <- emissions_by_stage %>%
-  filter(!is.na(FOOD_system_stage), !is.na(`2018`))
+  filter(!is.na(FOOD_system_compartment), !is.na(`2018`)) %>%
+  group_by(FOOD_system_compartment) %>%
+  slice_max(order_by = `2018`, n = 10) %>%
+  ungroup()
 boxplot_stage <- ggplot(emissions_by_stage_clean, aes(x=as.factor(FOOD_system_compartment), y=`2018`)) +
   geom_boxplot(fill="lightblue", alpha=0.2) +
-  xlab("Stage") +
+  xlab("Compartments") +
   ylab("Kton Substances/Year")
 
 interactive_boxplot_stage <- ggplotly(boxplot_stage)
@@ -353,7 +356,7 @@ body <- dashboardBody(
                   )
                 ),
                 tabPanel(
-                  title = "Boxplot Food Compartment Emissions",
+                  title = "Boxplot Food Compartment Emissions Top 10 Emittors",
                   icon = icon("chart-column"),
                   plotlyOutput("boxplot_stages")
                 )
