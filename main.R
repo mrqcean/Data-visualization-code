@@ -263,6 +263,38 @@ boxplot_stage <- ggplot(emissions_by_stage_clean, aes(x=as.factor(FOOD_system_co
 
 interactive_boxplot_stage <- ggplotly(boxplot_stage)
 
+############# ai graph dataframe for faster rerenders
+# this line works sometime idk why
+#emissions_by_industry <- read_excel("../datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
+
+countries <- slice(emissions_by_industry, 274,1191,1167,361)
+
+filtereddatasetbar <- filter(
+  emissions_by_industry,
+  grepl('Denmark|Congo$|Singapore|El Salvador', ...2)
+)
+ggplot(filtereddatasetbar, aes(x = ...2, y = ...4, fill = ...3))+ geom_col()
+ggplot(filtereddatasetbar, aes(x = ...2, y = ...24, fill = ...3))+ geom_col()
+ggplot(filtereddatasetbar, aes(x = ...2, y = ...44, fill = ...3))+ geom_col()
+#-------------------------------------------------
+#Use your dataset: filtereddatasetbar
+#-------------------------------------------------
+df_long <- filtereddatasetbar %>%
+  rename(
+    country = ...2,
+    emission_type = ...3
+  ) %>%
+  pivot_longer(
+    cols = ...4:...34,
+    names_to = "year",
+    values_to = "emission"
+  ) %>%
+  mutate(
+    year = 1974 + (as.numeric(str_extract(year, "\\d+")) - 4)
+  )
+
+
+###################### UI 
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("GWP Dashboard", tabName = "dashboard", icon = icon("chart-line")),
@@ -275,7 +307,21 @@ sidebar <- dashboardSidebar(
                      )
                 
   )
-)
+),
+# might be mssing , below
+
+  checkboxGroupInput(
+    "countries", "Select Countries:",
+    choices = sort(unique(df_long$country)),
+    selected = unique(df_long$country)
+  ),
+  checkboxGroupInput(
+    "types", "Select Emission Types:",
+    choices = sort(unique(df_long$emission_type)),
+    selected = unique(df_long$emission_type)
+  )
+
+
 )
 
 body <- dashboardBody(
@@ -305,8 +351,8 @@ body <- dashboardBody(
                   icon = icon("table"),         # Optional: icon for the tab
 
                   # This is the empty space, where you can add summary text or a table later
-                  p("This panel is ready for your summary table or text output!")
-                  #plotOutput("donought")
+                  #p("This panel is ready for your summary table or text output!")
+                  #plotlyOutput("plot")
                 ),
                 tabPanel(
                   title = "Animated bar chart emissions for four countries",
