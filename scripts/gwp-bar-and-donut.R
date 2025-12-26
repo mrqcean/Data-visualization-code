@@ -23,8 +23,10 @@ librariesAndDataBarDonut <- function() {
 
 emissionPerStepBar <- function(year, sum_emissions_by_stage) {
   #year = 2018
+  
   year = as.character(year)
   bardata <- select(sum_emissions_by_stage, FOOD_system_stage, year)
+  
   b <- ggplot(bardata, aes(x = FOOD_system_stage, y = .data[[year]], fill = FOOD_system_stage)) + 
     geom_col() + 
     scale_fill_brewer(palette=4) +
@@ -87,6 +89,52 @@ emissionPerStepDonut <- function(year, sum_emissions_by_stage) {
     theme(axis.text = element_blank(), legend.position = "none")
   #d
   return(d)
+}
+
+prepareBreakdown <- function() {
+  
+  stage_emissions <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage",skip = 2)
+  
+  
+  breakdownData <- stage_emissions %>%
+    filter(!is.na(FOOD_system_stage)) %>%
+    group_by(FOOD_system_stage, Substance) %>%
+    summarize(
+      across(`1970`:`2018`, sum, na.rm = TRUE)
+    )  
+  
+  return(breakdownData)
+}
+
+emissionBreakdown <- function(year, breakdownData, stage) {
+  # year = 2018
+  # stage = 'Consumption'
+  # stage = 'Distribution'
+  
+  year = as.character(year)
+  popData <- breakdownData %>%
+    select(FOOD_system_stage, Substance, year) %>%
+    filter(FOOD_system_stage == stage)
+  
+  pop <- ggplot(popData, aes(x=Substance, y=popData[[year]])) +
+    geom_point() + 
+    geom_segment( aes(x=Substance, xend=Substance, y=0, yend=popData[[year]])) + 
+    geom_text(
+      aes(label = scales::comma(.data[[year]])),
+      vjust = -0.7,
+      size = 3
+    ) +
+    scale_y_continuous(labels = scales::comma) +
+    scale_fill_brewer(palette=4) +
+    scale_color_brewer(palette=4) +
+    labs(
+      title = paste("Breakdown of Substances for Selected Stage"),
+      y = "Emission (kilotonnes)"
+    ) + 
+    theme_bw()
+  
+  # pop
+  return(pop)
 }
 
 

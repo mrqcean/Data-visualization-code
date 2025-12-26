@@ -25,7 +25,10 @@ source("./scripts/gwp-bar-and-donut.R")
 source("./scripts/gwp-cumulative-over-time.R")
 source("./scripts/emission-by-share.R")
 
+#Required Data Setups:
 sum_emissions_by_stage <- librariesAndDataBarDonut()
+breakdownData <- prepareBreakdown()
+
 
 ###### DEFINING GWP VALUES
 data_gwp <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
@@ -395,11 +398,14 @@ body <- dashboardBody(
                                   min = 1970, max = 2018,
                                   value = 1970, sep = NULL, 
                                   step = 1, animate = TRUE),
-                      plotOutput("total_emissions_donut")
+                      plotOutput("total_emissions_donut"),
+                      selectInput("stage", "Select Stage for Substance Breakdown:", 
+                                  c('Consumption', 'Distribution', 'End_of_Life', 'Processing', 'Production'),
+                                  selected = 'Consumption')
                     ),
                     mainPanel(
-                      plotOutput("total_emissions_bar")
-
+                      plotOutput("total_emissions_bar"),
+                      plotOutput("total_emissions_breakdown")
                     )
                   )
                 ),
@@ -460,6 +466,10 @@ server <- function(input, output) {
   
   output$total_emissions_donut <- renderPlot({
     emissionPerStepDonut(input$year, sum_emissions_by_stage)
+  })
+  
+  output$total_emissions_breakdown <- renderPlot({
+    emissionBreakdown(input$year, breakdownData, input$stage)
   })
   
   output$world_heat_map <- renderPlotly({
