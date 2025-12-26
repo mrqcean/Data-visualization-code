@@ -346,9 +346,11 @@ body <- dashboardBody(
                                   min = 1970, max = 2018,
                                   value = 1970, sep = NULL, 
                                   step = 1, animate = TRUE),
+                      plotOutput("total_emissions_donut")
                     ),
                     mainPanel(
                       plotOutput("total_emissions_bar")
+
                     )
                   )
                 ),
@@ -405,6 +407,10 @@ server <- function(input, output) {
   
   output$total_emissions_bar <- renderPlot({
     emissionPerStepBar(input$year, sum_emissions_by_stage)
+  })
+  
+  output$total_emissions_donut <- renderPlot({
+    emissionPerStepDonut(input$year, sum_emissions_by_stage)
   })
   
   output$world_heat_map <- renderPlotly({

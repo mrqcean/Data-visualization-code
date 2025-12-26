@@ -3,7 +3,7 @@ librariesAndDataBarDonut <- function() {
   library(dplyr)
   library(ggplot2)
   library(readxl)
-  
+
   stage_emissions <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage",skip = 2)
   
   #Filter total kton pollutants for each stage:
@@ -25,8 +25,9 @@ emissionPerStepBar <- function(year, sum_emissions_by_stage) {
   #year = 2018
   year = as.character(year)
   bardata <- select(sum_emissions_by_stage, FOOD_system_stage, year)
-  p <- ggplot(bardata, aes(x = FOOD_system_stage, y = .data[[year]], fill = FOOD_system_stage)) + 
+  b <- ggplot(bardata, aes(x = FOOD_system_stage, y = .data[[year]], fill = FOOD_system_stage)) + 
     geom_col() + 
+    scale_fill_brewer(palette=4) +
     geom_text(
       aes(label = scales::comma(.data[[year]])),
       vjust = -0.3,
@@ -34,7 +35,7 @@ emissionPerStepBar <- function(year, sum_emissions_by_stage) {
     ) +
     scale_y_continuous(limit = c(0,500000), labels = scales::comma) +
     labs(
-      title = paste("Emissions by Food System Stage in", year),
+      title = paste("Emissions by Food System Stage in", year, "(non-cumulative)"),
       x = NULL,
       y = "Total Pollutant Emissions (kilotonnes)",
       fill = "Food System Stage"
@@ -44,14 +45,48 @@ emissionPerStepBar <- function(year, sum_emissions_by_stage) {
       legend.box.just = "left",
       legend.margin = margin(6, 6, 6, 6)
     )
-    #p
-  return(p)
+    #b
+  return(b)
 }
 
 
-emissionPerStepDonut <- function() {
+emissionPerStepDonut <- function(year, sum_emissions_by_stage) {
+  #year = 2018
+  year = as.character(year)
+  donutdata <- select(sum_emissions_by_stage, FOOD_system_stage, year)
+  
+  # Compute percentages
+  donutdata$fraction <- donutdata[[year]] / sum(donutdata[[year]])
+  
+  # Compute the cumulative percentages (top of each rectangle)
+  donutdata$ymax <- cumsum(donutdata$fraction)
+  
+  # Compute the bottom of each rectangle
+  donutdata$ymin <- c(0, head(donutdata$ymax, n=-1))
+  
+  # Compute label position
+  donutdata$labelPosition <- (donutdata$ymax + donutdata$ymin) / 2
+  
+  # Compute a good label
+  donutdata$label <- paste0(round(donutdata$fraction*100,1), "%")
   
   
+  d <- ggplot(donutdata, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3,, fill = FOOD_system_stage)) + 
+    geom_rect() +
+    geom_text( x=4.2, aes(y=labelPosition, label=label), size=5, show.legend = FALSE) +
+    scale_fill_brewer(palette=4) +
+    coord_polar(theta="y") +
+    xlim(c(2, 4)) +
+    labs(
+      title = paste("Percentage of Total Emissions per Stage"),
+      fill = "Food System Stage",
+      x = NULL,
+      y = NULL
+    ) + 
+    theme_bw() +
+    theme(axis.text = element_blank(), legend.position = "none")
+  #d
+  return(d)
 }
 
 
