@@ -253,7 +253,7 @@ anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = S
 emissions_by_stage <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage", skip = 2)
 emissions_by_stage_clean <- emissions_by_stage %>%
   filter(!is.na(FOOD_system_stage), !is.na(`2018`))
-boxplot_stage <- ggplot(emissions_by_stage_clean, aes(x=as.factor(FOOD_system_stage), y=`2018`)) +
+boxplot_stage <- ggplot(emissions_by_stage_clean, aes(x=as.factor(FOOD_system_compartment), y=`2018`)) +
   geom_boxplot(fill="lightblue", alpha=0.2) +
   xlab("Stage") +
   ylab("Kton Substances/Year")
@@ -353,7 +353,7 @@ body <- dashboardBody(
                   )
                 ),
                 tabPanel(
-                  title = "Boxplot Food Stage Emissions",
+                  title = "Boxplot Food Compartment Emissions",
                   icon = icon("chart-column"),
                   plotlyOutput("boxplot_stages")
                 )
@@ -388,7 +388,7 @@ server <- function(input, output) {
   
   output$animated_barchart <- renderImage({
     outfile <- tempfile(fileext = '.gif')
-    anim <- animate(anim_bar_plot, nframes = 200, fps = 10,
+    anim <- animate(anim_bar_plot, nframes = 100, fps = 5,
                     width = 600, height = 400,
                     renderer = gifski_renderer())
     anim_save(outfile, animation = anim)
