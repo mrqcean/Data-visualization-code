@@ -29,7 +29,7 @@ source("./scripts/ai-graph.r")
 #Required Data Setups:
 sum_emissions_by_stage <- librariesAndDataBarDonut()
 breakdownData <- prepareBreakdown()
-ai_data <- load_and_clean_data()
+ai_data <- load_and_clean_combined_data()
 
 ###### DEFINING GWP VALUES
 data_gwp <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
