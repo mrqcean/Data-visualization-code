@@ -128,7 +128,7 @@ emissionBreakdown <- function(year, breakdownData, stage) {
     scale_fill_brewer(palette=4) +
     scale_color_brewer(palette=4) +
     labs(
-      title = paste("Breakdown of Substances for Selected Stage"),
+      title = paste("Breakdown of Substances in the", stage, "Stage"),
       y = "Emission (kilotonnes)"
     ) + 
     theme_bw()
