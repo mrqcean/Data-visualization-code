@@ -350,12 +350,12 @@ body <- dashboardBody(
 
                 # 2. Second Panel (Empty Placeholder)
                 tabPanel(
-                  title = "Cumulative Summary", # Title for the second tab
+                  title = "AI Graph", # Title for the second tab
                   icon = icon("table"),         # Optional: icon for the tab
 
                   # This is the empty space, where you can add summary text or a table later
                   #p("This panel is ready for your summary table or text output!")
-                  #plotlyOutput("plot")
+                  plotlyOutput("plot")
                 ),
                 tabPanel(
                   title = "Animated bar chart emissions for four countries",
@@ -478,6 +478,40 @@ server <- function(input, output) {
   
   output$boxplot_stages <- renderPlotly({
     interactive_boxplot_stage
+  })
+  filtered_data <- reactive({
+    df_long %>%
+      filter(
+        country %in% input$countries,
+        emission_type %in% input$types
+      )
+  })
+  output$plot <- renderPlotly({
+    plot_ly(
+      filtered_data(),
+      x = ~year,
+      y = ~emission,
+      color = ~country,
+      type = "scatter",
+      split = ~emission_type,
+      mode = "lines+markers",
+      hoverinfo = "text",
+      text = ~paste0(
+        "<b>Country:</b> ", country,
+        "<br><b>Type:</b> ", emission_type,
+        "<br><b>Year:</b> ", year,
+        "<br><b>Emission:</b> ", emission
+      )
+    ) %>%
+      layout(
+        title = "Emission Trends (Click Filters on Left)",
+        xaxis = list(title = "Year"),
+        yaxis = list(title = "Emission"),
+        #legend = list(orientation = "w")
+        showlegend = FALSE
+        # show text hover in comparion mode by default. text box too big
+        #hovermode = "x unified"
+      )
   })
 
 }
