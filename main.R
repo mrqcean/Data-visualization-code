@@ -24,11 +24,12 @@ library(maps)
 source("./scripts/gwp-bar-and-donut.R")
 source("./scripts/gwp-cumulative-over-time.R")
 source("./scripts/emission-by-share.R")
+source("./scripts/ai-graph.r")
 
 #Required Data Setups:
 sum_emissions_by_stage <- librariesAndDataBarDonut()
 breakdownData <- prepareBreakdown()
-
+ai_data <- load_and_clean_data()
 
 ###### DEFINING GWP VALUES
 data_gwp <- read_excel("./datasets/IPCC_AR4-AR6_GWPs.xlsx", sheet = "Main")
@@ -300,6 +301,7 @@ df_long <- filtereddatasetbar %>%
 ###################### UI 
 sidebar <- dashboardSidebar(
   sidebarMenu(
+    id = "tabs",
     menuItem("GWP Dashboard", tabName = "dashboard", icon = icon("chart-line")),
     # first arg is the exported variable name
     selectInput("selected_substance", "Choose a Substance:",
@@ -311,18 +313,19 @@ sidebar <- dashboardSidebar(
                 
   )
 ),
-# might be mssing , below
-
-  checkboxGroupInput(
-    "countries", "Select Countries:",
-    choices = sort(unique(df_long$country)),
-    selected = unique(df_long$country)
-  ),
-  checkboxGroupInput(
-    "types", "Select Emission Types:",
-    choices = sort(unique(df_long$emission_type)),
-    selected = unique(df_long$emission_type)
-  )
+# --- CONDITIONAL CONTROLS FOR AI GRAPH TAB ONLY ---
+conditionalPanel(
+  condition = "input.tabset1 == 'AI Graph'",
+  hr(),
+  h4("AI Graph Controls", style = "margin-left: 20px;"),
+  selectInput("ai_country", "Select Country:", 
+              choices = sort(unique(ai_data$Name)), selected = "World"),
+  checkboxGroupInput("ai_stages", "Food System Stages:",
+                     choices = unique(ai_data$FOOD_system_stage),
+                     selected = unique(ai_data$FOOD_system_stage)),
+  sliderInput("ai_year_range", "Year Range:", 
+              min = 1970, max = 2018, value = c(1990, 2018), sep = "")
+)
 
 
 )
@@ -346,16 +349,6 @@ body <- dashboardBody(
 
                   # The content for this tab is your existing plot output
                   plotOutput("my_line_graph")
-                ),
-
-                # 2. Second Panel (Empty Placeholder)
-                tabPanel(
-                  title = "AI Graph", # Title for the second tab
-                  icon = icon("table"),         # Optional: icon for the tab
-
-                  # This is the empty space, where you can add summary text or a table later
-                  #p("This panel is ready for your summary table or text output!")
-                  plotlyOutput("plot")
                 ),
                 tabPanel(
                   title = "Animated bar chart emissions for four countries",
@@ -413,7 +406,18 @@ body <- dashboardBody(
                   title = "Boxplot Food Compartment Emissions Top 10 Emittors",
                   icon = icon("chart-column"),
                   plotlyOutput("boxplot_stages")
-                )
+                ),
+                tabPanel(
+                  title = "AI Graph", 
+                  icon = icon("project-diagram"),
+                  fluidRow(
+                    column(6, plotlyOutput("sankeyPlot")),
+                    column(6, plotlyOutput("aiTrendPlot"))
+                  ),
+                  fluidRow(
+                    column(12, plotlyOutput("aiSharePlot"))
+                  )
+                ),
                 
               )
 
@@ -512,6 +516,58 @@ server <- function(input, output) {
         # show text hover in comparion mode by default. text box too big
         #hovermode = "x unified"
       )
+  })
+  
+  # 1. Reactive filter for the AI Graph tab
+  filtered_ai <- reactive({
+    req(input$ai_country, input$ai_stages, input$selected_substance)
+    ai_data %>%
+      filter(
+        Name == input$ai_country,
+        Substance == input$selected_substance,
+        FOOD_system_stage %in% input$ai_stages,
+        Year >= input$ai_year_range[1],
+        Year <= input$ai_year_range[2]
+      )
+  })
+  
+  # 2. Output for the Sankey Plot
+  output$sankeyPlot <- renderPlotly({
+    req(nrow(filtered_ai()) > 0)
+    
+    # Grab data for the latest year in the selected range
+    df_sankey <- filtered_ai() %>%
+      filter(Year == input$ai_year_range[2]) %>%
+      group_by(FOOD_system_stage, Substance) %>%
+      summarise(value = sum(Emissions_kton, na.rm = TRUE), .groups = 'drop')
+    
+    nodes <- data.frame(name = unique(c(df_sankey$FOOD_system_stage, df_sankey$Substance)))
+    df_sankey$source <- match(df_sankey$FOOD_system_stage, nodes$name) - 1
+    df_sankey$target <- match(df_sankey$Substance, nodes$name) - 1
+    
+    plot_ly(
+      type = "sankey",
+      node = list(label = nodes$name, pad = 15, thickness = 20),
+      link = list(source = df_sankey$source, target = df_sankey$target, value = df_sankey$value)
+    ) %>% layout(title = paste("Flow for", input$ai_year_range[2]))
+  })
+  
+  # 3. Output for the Area Trend Plot
+  output$aiTrendPlot <- renderPlotly({
+    p <- ggplot(filtered_ai(), aes(x = Year, y = Emissions_kton, fill = FOOD_system_stage)) +
+      geom_area(alpha = 0.8) +
+      scale_fill_viridis_d() +
+      theme_minimal()
+    ggplotly(p)
+  })
+  
+  # 4. Output for the Food Share Plot
+  output$aiSharePlot <- renderPlotly({
+    p <- ggplot(filtered_ai(), aes(x = Year, y = Food_Share, group = 1)) +
+      geom_line(color = "#e74c3c", size = 1) +
+      theme_minimal() +
+      labs(y = "Food Share (Ratio)")
+    ggplotly(p)
   })
 
 }

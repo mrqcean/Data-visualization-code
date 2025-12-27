@@ -6,8 +6,10 @@ library(plotly)
 library(bslib)
 library(scales)
 
+# scripts/ai-graph.r
+
 # --- DATA PROCESSING FUNCTION ---
-load_and_clean_data <- function() {
+load_and_clean_combined_data <- function() {
   # Load Table 3
   df_emi <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx", 
                        sheet = "Suppl. Table 3-Emi by stage", skip = 2)
@@ -16,29 +18,25 @@ load_and_clean_data <- function() {
   df_share <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx", 
                          sheet = "Suppl. Table 5 - FOOD shares", skip = 2)
   
-  # --- CRITICAL FIX: Standardize Column Names ---
-  # EDGAR files often use 'Country_code_A3' for the 3-letter code
-  # We'll rename them to ensure they match perfectly for the join
+  # Standardize Column Names
   colnames(df_emi)[1] <- "Country_ISO"
   colnames(df_share)[1] <- "Country_ISO"
   
-  # 1. Transform Table 3 to Long Format
+  # Transform Table 3 to Long Format
   df_emi_long <- df_emi %>%
     pivot_longer(cols = matches("^[0-9]{4}$"), 
                  names_to = "Year", 
                  values_to = "Emissions_kton") %>%
     mutate(Year = as.numeric(Year))
   
-  # 2. Transform Table 5 to Long Format
+  # Transform Table 5 to Long Format
   df_share_long <- df_share %>%
     pivot_longer(cols = matches("^[0-9]{4}$"), 
                  names_to = "Year", 
                  values_to = "Food_Share") %>%
     mutate(Year = as.numeric(Year))
   
-  # 3. Combine Tables
-  # We join on Country_ISO, Substance, and Year. 
-  # We omit 'Name' from the join to avoid ".x" and ".y" duplicates if they differ slightly.
+  # Combine Tables
   combined_data <- df_emi_long %>%
     left_join(df_share_long %>% select(Country_ISO, Substance, Year, Food_Share), 
               by = c("Country_ISO", "Substance", "Year")) %>%
@@ -47,6 +45,9 @@ load_and_clean_data <- function() {
   
   return(combined_data)
 }
+
+# Create the global object that the main file is looking for
+ai_data <- load_and_clean_combined_data()
 
 # --- UI DEFINITION ---
 ui <- page_sidebar(
