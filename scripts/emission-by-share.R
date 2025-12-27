@@ -233,7 +233,7 @@ p <- ggplot(plotdata, aes(x = as.numeric(day),
         ) +
   scale_color_viridis(discrete=TRUE) + 
 
-  labs(title = "evolution of european emissions total share related to food.",
+  labs(title = "Evolution of central european food based emissions of total share of emissions inside each country ",
        x = "Year",
        # concat to say, substance share of emitted substances for own country
        # internal country share of selected_substance
