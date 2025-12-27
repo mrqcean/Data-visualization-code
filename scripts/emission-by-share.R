@@ -128,7 +128,11 @@ return (ggplot(data) +
     labs(x = "Share for food related emissions", y = "Median share inside each region", fill = "Region") +
   coord_flip() +
   # theme must be bw, for scale_fill_viris_d to work
-  theme_bw() + scale_fill_viridis_d()
+    theme(
+      panel.background = element_rect(fill = "white"),  # Hvid baggrund
+      panel.grid.major = element_blank(),               # Fjern store gitterlinjer
+      panel.grid.minor = element_blank()                # Fjern små gitterlinjer
+    ) + scale_fill_viridis_d()
 )
 }
 
