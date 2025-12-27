@@ -142,7 +142,7 @@ pub_emission_share_grouped_barchart()
   
   # get what countries are in eastern europe, oecd europe, midde europe and so on.
   filtereddataset <- country_classification %>%
-  filter(grepl('Europe', .data[["Regional grouping"]]))
+  filter(grepl('Central Europe', .data[["Regional grouping"]]))
   # convert to 1,n vector, we chose the country name as the column
   # this can also be done in base R
   countries_filter <- dplyr::pull(filtereddataset, `Country name`)
