@@ -404,7 +404,7 @@ body <- dashboardBody(
                   )
                 ),
                 tabPanel(
-                  title = "Boxplot Food Compartment Emissions Top 10 Emittors",
+                  title = "Boxplot Food Compartment Emissions Top 10 Emittors 2018",
                   icon = icon("chart-column"),
                   plotlyOutput("boxplot_stages")
                 ),
@@ -417,7 +417,16 @@ body <- dashboardBody(
                   ),
                   fluidRow(
                     column(12, plotlyOutput("aiSharePlot"))
-                  )
+                  ),
+                  div("This generated graph answers research question Q4"),
+                  div(style ="border:1px solid black;",
+                    'Google Gemini promts: \n Your task is to combine 2 tables and make an r graph visualization, output to r shiny, of them. the two tables and the way to read them are: read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 3-Emi by stage", skip = 2) and read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 5 - FOOD Shares", skip = 2). Table 3 is structured with the columns: Country (3 letter code), Name (Full name of country), Substance (substance letter and number code), FOOD_system_stage (The stage; Production, Processing, etc.), FOOD_system_compartment (The compartment; Energy, Industry, etc.), 1970, 1971, up to 2018, with each year column containing emissions for that year expressed in kton substance per year. Table 5 is structured with the columns: Country (3 letter code), Name (Full name of country), Substance (substance letter and number code), 1970, 1971, up to 2018, with each year column containing food shares in a number from 0 up to 1. Expect that nan values maybe found in the columns and deal with it. Make the visualization cool, interactive and groundbreaking. Make no mistakes, the future is at stake.
+                    '
+                    
+                  ),
+                  
+                  div(style ="border:1px solid black;", "make the output output to the same as the others in this main file, the file of the ai graph is under scripts folder in the file ai-graph.r, make the controls only be in the tab for the ai graph: the part main.r concering rshiny tabpanels and output pasted"
+                      )
                 ),
                 
               )
