@@ -1,100 +1,153 @@
+# Load necessary libraries
 library(shiny)
+library(readxl)
 library(tidyverse)
 library(plotly)
-library(readxl)
-emissions_by_industry <- read_excel("../datasets/EDGAR-FOOD_v61_AP.xlsx",sheet = "Suppl. Table 4-Emi by Country")
-countries <- slice(emissions_by_industry, 274,1191,1167,361)
+library(bslib)
+library(scales)
 
-filtereddatasetbar <- filter(
-  emissions_by_industry,
-  grepl('Denmark|Congo$|Singapore|El Salvador', ...2)
-)
-ggplot(filtereddatasetbar, aes(x = ...2, y = ...4, fill = ...3))+ geom_col()
-ggplot(filtereddatasetbar, aes(x = ...2, y = ...24, fill = ...3))+ geom_col()
-ggplot(filtereddatasetbar, aes(x = ...2, y = ...44, fill = ...3))+ geom_col()
-#-------------------------------------------------
-#Use your dataset: filtereddatasetbar
-#-------------------------------------------------
-df_long <- filtereddatasetbar %>%
-  rename(
-    country = ...2,
-    emission_type = ...3
-  ) %>%
-  pivot_longer(
-    cols = ...4:...34,
-    names_to = "year",
-    values_to = "emission"
-  ) %>%
-  mutate(
-    year = 1974 + (as.numeric(str_extract(year, "\\d+")) - 4)
-  )
-
-#----- AI APP 
-
-#-------------------------------------------------
-#Shiny App
-#-------------------------------------------------
-ui <- fluidPage(
-  titlePanel("Interactive Emission Trends (1974–2004)"),
-
-  sidebarLayout(
-    sidebarPanel(
-      checkboxGroupInput(
-        "countries", "Select Countries:",
-        choices = sort(unique(df_long$country)),
-        selected = unique(df_long$country)
-      ),
-      checkboxGroupInput(
-        "types", "Select Emission Types:",
-        choices = sort(unique(df_long$emission_type)),
-        selected = unique(df_long$emission_type)
-      )
-    ),
-
-    mainPanel(
-      plotlyOutput("plot", height = "700px")
-    )
-  )
-)
-#print(df_long,n = Inf)
-#df_long
-server <- function(input, output) {
-# how Do I ensure that the new rows added for a different substance are not added to the previous substances dataframe
+# --- DATA PROCESSING FUNCTION ---
+load_and_clean_data <- function() {
+  # Load Table 3
+  df_emi <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx", 
+                       sheet = "Suppl. Table 3-Emi by stage", skip = 2)
   
-  filtered_data <- reactive({
-    df_long %>%
-      filter(
-        country %in% input$countries,
-        emission_type %in% input$types
-      )
-  })
+  # Load Table 5
+  df_share <- read_excel("./datasets/EDGAR-FOOD_v61_AP.xlsx", 
+                         sheet = "Suppl. Table 5 - FOOD shares", skip = 2)
+  
+  # --- CRITICAL FIX: Standardize Column Names ---
+  # EDGAR files often use 'Country_code_A3' for the 3-letter code
+  # We'll rename them to ensure they match perfectly for the join
+  colnames(df_emi)[1] <- "Country_ISO"
+  colnames(df_share)[1] <- "Country_ISO"
+  
+  # 1. Transform Table 3 to Long Format
+  df_emi_long <- df_emi %>%
+    pivot_longer(cols = matches("^[0-9]{4}$"), 
+                 names_to = "Year", 
+                 values_to = "Emissions_kton") %>%
+    mutate(Year = as.numeric(Year))
+  
+  # 2. Transform Table 5 to Long Format
+  df_share_long <- df_share %>%
+    pivot_longer(cols = matches("^[0-9]{4}$"), 
+                 names_to = "Year", 
+                 values_to = "Food_Share") %>%
+    mutate(Year = as.numeric(Year))
+  
+  # 3. Combine Tables
+  # We join on Country_ISO, Substance, and Year. 
+  # We omit 'Name' from the join to avoid ".x" and ".y" duplicates if they differ slightly.
+  combined_data <- df_emi_long %>%
+    left_join(df_share_long %>% select(Country_ISO, Substance, Year, Food_Share), 
+              by = c("Country_ISO", "Substance", "Year")) %>%
+    filter(!is.na(Emissions_kton)) %>%
+    replace_na(list(Food_Share = 0))
+  
+  return(combined_data)
+}
 
-  output$plot <- renderPlotly({
+# --- UI DEFINITION ---
+ui <- page_sidebar(
+  theme = bs_theme(version = 5, bootswatch = "flatly", primary = "#2c3e50"),
+  title = "EDGAR-FOOD Global Insights",
+  
+  sidebar = sidebar(
+    title = "Controls",
+    selectInput("substance", "Select Substance:", choices = NULL),
+    selectInput("country", "Select Country:", choices = NULL, selected = "World"),
+    checkboxGroupInput("stages", "Food System Stages:", choices = NULL),
+    sliderInput("year_range", "Year Range:", min = 1970, max = 2018, value = c(1990, 2018), sep = "")
+  ),
+  
+  layout_column_wrap(
+    width = 1/2,
+    card(
+      card_header("Emissions Trend by Stage (kton)"),
+      plotlyOutput("trendPlot")
+    ),
+    card(
+      card_header("Emissions Flow: Stage to Substance"),
+      plotlyOutput("sankeyPlot")
+    )
+  ),
+  card(
+    card_header("Food Share Impact over Time"),
+    plotlyOutput("sharePlot")
+  )
+)
+
+# --- SERVER LOGIC ---
+server <- function(input, output, session) {
+  
+  # Load data reactively
+  raw_data <- reactive({
+    load_and_clean_data()
+  })
+  
+  # Update UI inputs based on data
+  observe({
+    df <- raw_data()
+    updateSelectInput(session, "substance", choices = sort(unique(df$Substance)))
+    updateSelectInput(session, "country", choices = sort(unique(df$Name)), selected = "World")
+    updateCheckboxGroupInput(session, "stages", 
+                             choices = unique(df$FOOD_system_stage),
+                             selected = unique(df$FOOD_system_stage))
+  })
+  
+  # Filter data based on user selection
+  filtered_df <- reactive({
+    req(input$substance, input$country, input$stages)
+    raw_data() %>%
+      filter(Substance == input$substance,
+             Name == input$country,
+             FOOD_system_stage %in% input$stages,
+             Year >= input$year_range[1],
+             Year <= input$year_range[2])
+  })
+  
+  # Plot 1: Interactive Area Chart
+  output$trendPlot <- renderPlotly({
+    p <- ggplot(filtered_df(), aes(x = Year, y = Emissions_kton, fill = FOOD_system_stage)) +
+      geom_area(alpha = 0.8, color = "white", linewidth = 0.1) +
+      scale_fill_viridis_d(option = "mako") +
+      theme_minimal() +
+      labs(x = "Year", y = "Emissions (kton)")
+    
+    ggplotly(p) %>% layout(legend = list(orientation = 'h', y = -0.2))
+  })
+  
+  # Plot 2: Interactive Sankey (Groundbreaking Visualization)
+  output$sankeyPlot <- renderPlotly({
+    df_sankey <- filtered_df() %>%
+      filter(Year == input$year_range[2]) %>%
+      group_by(FOOD_system_stage, Substance) %>%
+      summarise(value = sum(Emissions_kton, na.rm = TRUE)) %>%
+      ungroup()
+    
+    # Define nodes and links for Sankey
+    nodes <- data.frame(name = unique(c(df_sankey$FOOD_system_stage, df_sankey$Substance)))
+    df_sankey$source <- match(df_sankey$FOOD_system_stage, nodes$name) - 1
+    df_sankey$target <- match(df_sankey$Substance, nodes$name) - 1
+    
     plot_ly(
-      filtered_data(),
-      x = ~year,
-      y = ~emission,
-      color = ~country,
-      type = "scatter",
-      split = ~emission_type,
-      mode = "lines+markers",
-      hoverinfo = "text",
-      text = ~paste0(
-        "<b>Country:</b> ", country,
-        "<br><b>Type:</b> ", emission_type,
-        "<br><b>Year:</b> ", year,
-        "<br><b>Emission:</b> ", emission
-      )
-    ) %>%
-      layout(
-        title = "Emission Trends (Click Filters on Left)",
-        xaxis = list(title = "Year"),
-        yaxis = list(title = "Emission"),
-        #legend = list(orientation = "w")
-        showlegend = FALSE
-        # show text hover in comparion mode by default. text box too big
-        #hovermode = "x unified"
-      )
+      type = "sankey",
+      orientation = "h",
+      node = list(label = nodes$name, pad = 15, thickness = 20, line = list(color = "black", width = 0.5)),
+      link = list(source = df_sankey$source, target = df_sankey$target, value = df_sankey$value)
+    ) %>% layout(title = paste("Flow for", input$year_range[2]))
+  })
+  
+  # Plot 3: Food Share Trend
+  output$sharePlot <- renderPlotly({
+    p <- ggplot(filtered_df(), aes(x = Year, y = Food_Share, group = 1)) +
+      geom_line(color = "#e74c3c", size = 1) +
+      geom_point(aes(text = paste("Year:", Year, "<br>Share:", percent(Food_Share)))) +
+      theme_minimal() +
+      labs(title = "Food System Share of Total Country Emissions", y = "Share (0 to 1)")
+    
+    ggplotly(p, tooltip = "text")
   })
 }
 
