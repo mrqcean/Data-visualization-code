@@ -250,6 +250,7 @@ animated_bar_data <- rbind(data_a1, data_b1, data_c1, data_d1, data_e1, data_f1,
 
 anim_bar_plot <- ggplot(animated_bar_data, aes(x = Country, y = Amount, fill = Substance)) +
   geom_col() +
+  scale_fill_brewer(palette = "Set1") +
   labs(title = 'Emissions: {closest_state}') + # Dynamic title
   transition_states(frame, transition_length = 2, state_length =  1) +
   ease_aes('sine-in-out')
