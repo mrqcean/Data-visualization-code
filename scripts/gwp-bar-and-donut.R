@@ -130,8 +130,7 @@ emissionBreakdown <- function(year, breakdownData, stage) {
     labs(
       title = paste("Breakdown of Substances in the", stage, "Stage"),
       y = "Emission (kilotonnes)"
-    ) + 
-    theme_bw()
+    )
   
   # pop
   return(pop)
