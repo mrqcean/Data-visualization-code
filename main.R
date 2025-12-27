@@ -428,7 +428,10 @@ body <- dashboardBody(
                   div(style ="border:1px solid black;", "make the output output to the same as the others in this main file, the file of the ai graph is under scripts folder in the file ai-graph.r, make the controls only be in the tab for the ai graph: the part main.r concering rshiny tabpanels and output pasted"
                       )
                 ),
-                
+                tabPanel(
+                  title = "Download report here",
+                  div("https://drive.google.com/drive/folders/1Mn6uvMrpbSAqsVPlTzTrVOp9M_C7LorX?usp=sharing")
+                )
               )
 
             )
